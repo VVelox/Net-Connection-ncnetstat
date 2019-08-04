@@ -5,6 +5,62 @@ use warnings;
 use Getopt::Long;
 use Net::Connection::ncnetstat;
 
+sub version{
+	print "ncnetstat v. 0.0.0\n";
+}
+
+sub help{
+	print '
+-a         Show all connections.
+--drp      Don\'t resolve port names.
+-i         Invert the sort.
+-l         Show the listening ports.
+-n         Don\' resolve the PTRs.
+--nc       Don\'t use colors.
+-S <sort>  The Net::Connection::Sort to use.
+-t         Show only TCP connections.
+-u         Show only UDP connections.
+
+-c <CIDRs>  A comma seperated list of CIDRs to search for.
+--ci        Invert the CIDR search.
+
+-C    Show the command to the first space.
+--Cl  Show the whole command.
+
+-p <ports>  A comma seperated list of ports to search for.
+--pi        Invert the port search.
+
+-P <protocols>  A comma seperated list of protocols to search for.
+--Pi            Invert your protocol search.
+
+--ptr <PTRs>   A comma seperated list of PTRs to search for.
+--ptri         Invert the PTR search.
+--lptr         A comma seperated list of local PTRs to search for.
+--lptri        Invert the local PTR search.
+--rptr         A comma seperated list of remote PTRs to search for.
+--rptri        Invert the remote PTR search.
+
+-s <states>  A comma seperated list of states to search for.
+--si         Invert the state search.
+
+The default available sort methods are as below.
+host_f   foreign host
+host_fl  foreign host, local host
+host_l   local host
+host_lf  local host, foreign host
+pid      process ID
+port_f   foreign port, numerically
+port_fa  foreign port, alphabetically
+port_l   local port, numerically
+port_la  local port, alphabetically
+proto    protocol
+ptr_f    foreign PTR
+ptr_l    local PTR
+state    state
+uid      user ID
+user     username
+';
+}
 
 # command line option holders
 my $tcp=0;
@@ -14,6 +70,8 @@ my $version=0;
 my $dont_resolve_ports=0;
 my $sort='host_fl';
 my $cidr_string;
+my $lcidr_string;
+my $rcidr_string;
 my $ports_string;
 my $states_string;
 my $protocols_string;
@@ -28,6 +86,8 @@ my $rptrs_invert;
 my $lptrs_invert;
 my $ptrs_invert;
 my $cidr_invert;
+my $lcidr_invert;
+my $rcidr_invert;
 my $states_invert;
 my $protocols_invert;
 my $no_color=0;
@@ -52,6 +112,10 @@ GetOptions(
 		   'drp' => \$dont_resolve_ports,
 		   'c=s' => \$cidr_string,
 		   'ci'=> \$cidr_invert,
+		   'lc=s' => \$lcidr_string,
+		   'lci'=> \$lcidr_invert,
+		   'rc=s' => \$rcidr_string,
+		   'rci'=> \$rcidr_invert,
 		   'S=s' => \$sort,
 		   'p=s' => \$ports_string,
 		   'pi' => \$ports_invert,
@@ -72,6 +136,18 @@ GetOptions(
 		   );
 
 my @filters;
+
+# print the version info if requested
+if ( $version ){
+	&version;
+	exit;
+}
+
+if ( $help ){
+	&version;
+	&help;
+	exit;
+}
 
 # add the filters for the -l and -a option
 if (
@@ -155,6 +231,36 @@ if ( defined( $cidr_string ) ){
 					 }
 		  );
 }
+
+#
+# Handle local CIDR searches
+#
+#if ( defined( $lcidr_string ) ){
+#	my @cidrs=split(/\,/, $lcidr_string );
+#	push( @filters, {
+#					 type=>'CIDR',
+#					 invert=>$cidr_invert,
+#					 args=>{
+#							lcidrs=>\@cidrs,
+#							},
+#					 }
+#		  );
+#}
+
+#
+# Handle local CIDR searches
+#
+#if ( defined( $fcidr_string ) ){
+#	my @cidrs=split(/\,/, $fcidr_string );
+#	push( @filters, {
+#					 type=>'CIDR',
+#					 invert=>$cidr_invert,
+#					 args=>{
+#							fcidrs=>\@cidrs,
+#							},
+#					 }
+#		  );
+#}
 
 #
 # Handle the ports search.
@@ -261,6 +367,14 @@ if ( defined( $ENV{NCNETSTAT_ptr} ) ){
 if ( defined( $ENV{NO_COLOR} ) ){
 	$no_color = $no_color ^ 1;
 }
+# disable the color if requested
+if ( $no_color ){
+	$ENV{ANSI_COLORS_DISABLED}=1;
+}
+# set C if Cl is set
+if ( $command_long && ! $command ){
+	$command=1;
+}
 
 my $ncnetstat=Net::Connection::ncnetstat->new(
 											  {
@@ -276,8 +390,4 @@ my $ncnetstat=Net::Connection::ncnetstat->new(
 													   }
 											   }
 											  );
-
-#use Data::Dumper;
-#die Dumper( $ncnetstat );
-
 print $ncnetstat->run;

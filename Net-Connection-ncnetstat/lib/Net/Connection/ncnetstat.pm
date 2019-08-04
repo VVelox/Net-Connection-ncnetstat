@@ -190,7 +190,7 @@ sub run{
 
 		# Figure out what we are using for the local host
 		my $local;
-		if ( defined( $conn->local_ptr ) ){
+		if ( defined( $conn->local_ptr ) && $self->{ptr} ){
 			$local=$conn->local_ptr;
 		}else{
 			$local=$conn->local_host;
@@ -198,7 +198,7 @@ sub run{
 
 		# Figure out what we are using for the foriegn host
 		my $foreign;
-		if ( defined( $conn->foreign_ptr ) ){
+		if ( defined( $conn->foreign_ptr ) && $self->{ptr} ){
 			$foreign=$conn->foreign_ptr;
 		}else{
 			$foreign=$conn->foreign_host;
