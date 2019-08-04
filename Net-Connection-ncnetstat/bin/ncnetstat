@@ -1,0 +1,283 @@
+#!perl
+
+use strict;
+use warnings;
+use Getopt::Long;
+use Net::Connection::ncnetstat;
+
+
+# command line option holders
+my $tcp=0;
+my $udp=0;
+my $help=0;
+my $version=0;
+my $dont_resolve_ports=0;
+my $sort='host_fl';
+my $cidr_string;
+my $ports_string;
+my $states_string;
+my $protocols_string;
+my $all=0;
+my $listening;
+my $invert=0;
+my $ptrs_string;
+my $rptrs_string;
+my $lptrs_string;
+my $ports_invert;
+my $rptrs_invert;
+my $lptrs_invert;
+my $ptrs_invert;
+my $cidr_invert;
+my $states_invert;
+my $protocols_invert;
+my $no_color=0;
+my $no_use_ptr=0;
+my $ptr=1;
+my $command=0;
+my $command_long=0;
+
+# get the commandline options
+Getopt::Long::Configure ('no_ignore_case');
+Getopt::Long::Configure ('bundling');
+GetOptions(
+		   't'=>\$tcp,
+		   'u'=>\$udp,
+		   'version' => \$version,
+		   'v' => \$version,
+		   'help' => \$help,
+		   'h' => \$help,
+		   'a' => \$all,
+		   'l' => \$listening,
+		   'i' => \$invert,
+		   'drp' => \$dont_resolve_ports,
+		   'c=s' => \$cidr_string,
+		   'ci'=> \$cidr_invert,
+		   'S=s' => \$sort,
+		   'p=s' => \$ports_string,
+		   'pi' => \$ports_invert,
+		   's=s' => \$states_string,
+		   'si' => \$states_invert,
+		   'P=s' => \$protocols_string,
+		   'Pi' => \$protocols_invert,
+		   'ptr=s' => \$ptrs_string,
+		   'ptri' => \$ptrs_invert,
+		   'rptr=s' => \$rptrs_string,
+		   'rptri' => \$rptrs_invert,
+		   'lptr=s' => \$lptrs_string,
+		   'lptri' => \$lptrs_invert,
+		   'nc' => \$no_color,
+		   'n' => \$no_use_ptr,
+		   'C' => \$command,
+		   'Cl' => \$command_long,
+		   );
+
+my @filters;
+
+# add the filters for the -l and -a option
+if (
+	( ! $all ) &&
+	( ! $listening )
+	){
+	# If -a is not given, we don't want the listen ports
+	push( @filters, {
+					 type=>'States',
+					 invert=>1,
+					 args=>{
+							states=>['LISTEN']
+							}
+					 },
+		  {
+		   type=>'Ports',
+		   invert=>1,
+		   args=>{
+				  fports=>[
+						   '*',
+						   ],
+				  }
+		   }
+		 );
+}elsif(
+	   $listening &&
+	   ( ! $all )
+	   ){
+	# if -l we only want the ports in the LISTEN state
+	push( @filters, {
+					 type=>'States',
+					 invert=>0,
+					 args=>{
+							states=>['LISTEN']
+							}
+					 }
+		 );
+}
+
+#
+# Handle stats search
+#
+if ( defined( $states_string ) ){
+	my @states=split(/\,/, $states_string );
+	push( @filters, {
+					 type=>'States',
+					 invert=>$states_invert,
+					 args=>{
+							states=>\@states,
+							},
+					 }
+		 );
+}
+
+#
+# handles the protocol search
+#
+if ( defined( $protocols_string ) ){
+	my @protos=split(/\,/, $protocols_string );
+	push( @filters, {
+					 type=>'Protos',
+					 invert=>$protocols_invert,
+					 args=>{
+							protos=>\@protos,
+							},
+					 }
+		 );
+}
+
+#
+# Handle CIDR searches
+#
+if ( defined( $cidr_string ) ){
+	my @cidrs=split(/\,/, $cidr_string );
+	push( @filters, {
+					 type=>'CIDR',
+					 invert=>$cidr_invert,
+					 args=>{
+							cidrs=>\@cidrs,
+							},
+					 }
+		  );
+}
+
+#
+# Handle the ports search.
+#
+if ( defined( $ports_string ) ){
+	my @ports=split(/\,/, $ports_string);
+	push( @filters, {
+					 type=>'Ports',
+					 invert=>$ports_invert,
+					 args=>{
+							ports=>\@ports,
+							},
+					 }
+		 );
+}
+
+#
+# Handle the ptrs searches
+#
+if ( defined( $ptrs_string ) ){
+	my @ptrs=split(/\,/, $ptrs_string);
+	push( @filters, {
+					 type=>'PTR',
+					 invert=>$ptrs_invert,
+					 args=>{
+							ptrs=>\@ptrs,
+							},
+					 }
+		 );
+}
+
+#
+# Handle the remote ptrs searches
+#
+if ( defined( $rptrs_string ) ){
+	my @ptrs=split(/\,/, $rptrs_string);
+	push( @filters, {
+					 type=>'PTR',
+					 invert=>$rptrs_invert,
+					 args=>{
+							fptrs=>\@ptrs,
+							},
+					 }
+		 );
+}
+
+#
+# Handle the local ptrs searches
+#
+if ( defined( $lptrs_string ) ){
+	my @ptrs=split(/\,/, $lptrs_string);
+	push( @filters, {
+					 type=>'PTR',
+					 invert=>$lptrs_invert,
+					 args=>{
+							lptrs=>\@ptrs,
+							},
+					 }
+		 );
+}
+
+# handle the -t -u options
+# only add a filter if one is specified...
+# adding both is just pointless
+if (
+	( ! $tcp ) &&
+	$udp
+	){
+	push( @filters, {
+					 type=>'Protos',
+					 invert=>0,
+					 args=>{
+							protos=>[ 'udp4', 'udp6' ],
+							}
+					 },
+		 );
+}elsif(
+	   $tcp &&
+	   ( ! $udp )
+	   ){
+	push( @filters, {
+					 type=>'Protos',
+					 invert=>0,
+					 args=>{
+							protos=>[ 'tcp4', 'tcp6' ],
+							}
+					 }
+		 );
+}
+
+if ( $no_use_ptr ){
+	$ptr=0;
+}
+
+# XOR the -i if needed
+if ( defined( $ENV{NCNETSTAT_invert} ) ){
+	$invert= $invert ^ $ENV{NCNETSTAT_invert};
+}
+# XOR the -n value if needed
+if ( defined( $ENV{NCNETSTAT_ptr} ) ){
+	$ptr = $ptr ^ $ENV{NCNETSTAT_ptr};
+}
+# same for the no color
+if ( defined( $ENV{NO_COLOR} ) ){
+	$no_color = $no_color ^ 1;
+}
+
+my $ncnetstat=Net::Connection::ncnetstat->new(
+											  {
+											   ptr=>$ptr,
+											   command=>$command,
+											   command_long=>$command_long,
+											   sorter=>{
+														invert=>$invert,
+														type=>$sort,
+														},
+											   match=>{
+													   checks=>\@filters,
+													   }
+											   }
+											  );
+
+#use Data::Dumper;
+#die Dumper( $ncnetstat );
+
+print $ncnetstat->run;

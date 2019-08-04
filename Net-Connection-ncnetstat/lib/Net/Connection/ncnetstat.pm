@@ -3,6 +3,13 @@ package Net::Connection::ncnetstat;
 use 5.006;
 use strict;
 use warnings;
+use Net::Connection;
+use Net::Connection::Match;
+use Net::Connection::Sort;
+use Net::Connection::lsof;
+use Text::Table;
+use Term::ANSIColor;
+use Proc::ProcessTable;
 
 =head1 NAME
 
@@ -10,11 +17,11 @@ Net::Connection::ncnetstat - The great new Net::Connection::ncnetstat!
 
 =head1 VERSION
 
-Version 0.01
+Version 0.0.0
 
 =cut
 
-our $VERSION = '0.01';
+our $VERSION = '0.0.0';
 
 
 =head1 SYNOPSIS
@@ -28,25 +35,253 @@ Perhaps a little code snippet.
     my $foo = Net::Connection::ncnetstat->new();
     ...
 
-=head1 EXPORT
+=head1 METHODS
 
-A list of functions that can be exported.  You can delete this section
-if you don't export anything, such as for a purely object-oriented module.
+=head2 new
 
-=head1 SUBROUTINES/METHODS
+=head3 args hash ref
 
-=head2 function1
+=head4 command
+
+If set to true, it will show the command for the PID.
+
+=head4 command_long
+
+If set to true, the full command is shown.
+
+This requires command also being true.
+
+=head4 match
+
+This is the hash to pass to L<Net::Connection::Match>.
+
+By default this is undef and that module won't be used.
+
+=head4 sorter
+
+This is what is to be passed to L<Net::Connection::Sorter>.
+
+The default is as below.
+
+    {
+     type=>'host_fl',
+     invert=>0,
+    }
 
 =cut
 
-sub function1 {
+sub new{
+	my %args;
+	if(defined($_[1])){
+		%args= %{$_[1]};
+	};
+
+	if (! defined( $args{sorter} ) ){
+		$args{sorter}={
+					   type=>'host_fl',
+					   invert=>0,
+					   };
+	}
+
+	my $self = {
+				invert=>0,
+				sorter=>Net::Connection::Sort->new( $args{sorter} ),
+				ptr=>1,
+				command=>0,
+				command_long=>0,
+				};
+    bless $self;
+
+	if ( defined( $args{match} ) ){
+		$self->{match}=Net::Connection::Match->new( $args{match} );
+	}
+
+	if ( defined( $args{ptr} )){
+		$self->{ptr}=$args{ptr};
+	}
+
+	if ( defined( $args{command} ) ){
+		$self->{command}=$args{command};
+	}
+
+	if ( defined( $args{command_long} ) ){
+		$self->{command_long}=$args{command_long};
+	}
+	
+	return $self;
 }
 
-=head2 function2
+=head2 run
+
+This runs it and returns a string.
+
+
 
 =cut
 
-sub function2 {
+sub run{
+	my $self=$_[0];
+	
+	my @objects = &lsof_to_nc_objects;
+
+	my @found;
+	if (defined( $self->{match} )){
+		foreach my $conn (@objects){
+			if( $self->{match}->match( $conn ) ){
+				push( @found, $conn );
+			}
+		}
+	}else{
+		@found=@objects;
+	}
+
+	@found=$self->{sorter}->sorter( \@found );
+
+	my @headers=(
+				 color('underline white').'Proto'.color('reset'),
+				 color('underline white').'User'.color('reset'),
+				 color('underline white').'PID'.color('reset'),
+				 color('underline white').'Local Host'.color('reset'),
+				 color('underline white').'Port'.color('reset'),
+				 color('underline white').'Foreach Host'.color('reset'),
+				 color('underline white').'Port'.color('reset'),
+				 color('underline white').'State'.color('reset'),
+				 );
+
+	if ( $self->{command} ){
+		push( @headers, color('underline white').'Command'.color('reset') )
+	}
+
+	my $tb = Text::Table->new( @headers );
+
+	# process table stuff if needed
+	my $ppt;
+	my $proctable;
+	my %cmd_cache;
+	if ( $self->{command} ){
+		$ppt=Proc::ProcessTable->new;
+		$proctable=$ppt->table;
+	}
+
+	my @td;
+	foreach my $conn ( @found ){
+		my @new_line=(
+					  color('bright_yellow').$conn->proto.color('reset'),
+					  );
+
+		# handle adding the username or UID if we have one
+		if ( defined( $conn->username ) ){
+			push( @new_line,  color('bright_cyan').$conn->username.color('reset'));
+		}else{
+			if ( defined( $conn->uid ) ){
+				push( @new_line,  color('bright_cyan').$conn->uid.color('reset'));
+			}else{
+				push( @new_line, '');
+			}
+		}
+
+		# handle adding the PID if we have one
+		if ( defined( $conn->pid ) ){
+			push( @new_line,  color('bright_red').$conn->pid.color('reset'));
+			$conn->pid;
+		}else{
+			push( @new_line, '');
+		}
+
+		# Figure out what we are using for the local host
+		my $local;
+		if ( defined( $conn->local_ptr ) ){
+			$local=$conn->local_ptr;
+		}else{
+			$local=$conn->local_host;
+		}
+
+		# Figure out what we are using for the foriegn host
+		my $foreign;
+		if ( defined( $conn->foreign_ptr ) ){
+			$foreign=$conn->foreign_ptr;
+		}else{
+			$foreign=$conn->foreign_host;
+		}
+
+		# Figure out what we are using for the local port
+		my $lport;
+		if ( defined( $conn->local_port_name ) ){
+			$lport=$conn->local_port_name;
+		}else{
+			$lport=$conn->local_port;
+		}
+
+		# Figure out what we are using for the foreign port
+		my $fport;
+		if ( defined( $conn->foreign_port_name ) ){
+			$fport=$conn->foreign_port_name;
+		}else{
+			$fport=$conn->foreign_port;
+		}
+
+		push(
+			 @new_line,
+			 color('bright_green').$local.color('reset'),
+			 color('green').$lport.color('reset'),
+			 color('bright_magenta').$foreign.color('reset'),
+			 color('magenta').$fport.color('reset'),
+			 color('bright_blue').$conn->state.color('reset'),
+			 );
+
+		# handle the command portion if needed
+		if (
+			defined( $conn->pid ) &&
+			$self->{command}
+			){
+
+			my $loop=1;
+			my $proc=0;
+			while (
+				   defined( $proctable->[ $proc ] ) &&
+				   $loop
+				   ){
+				my $command;
+				if (defined( $cmd_cache{$conn->pid} ) ){
+					push( @new_line, color('bright_red').$cmd_cache{$conn->pid}.color('reset') );
+					$loop=0;
+				}elsif( $proctable->[ $proc ]->pid eq $conn->pid ){
+					if ( $proctable->[ $proc ]->{'cmndline'} =~ /^$/ ){
+						#kernel process
+						$cmd_cache{$conn->pid}=color('bright_red').'['.$proctable->[ $proc ]->{'fname'}.']'.color('reset');
+					}elsif( $self->{command_long} ){
+						$cmd_cache{$conn->pid}=color('bright_red').$proctable->[ $proc ]->{'cmndline'}.color('reset');
+					}elsif( $proctable->[ $proc ]->{'cmndline'} =~ /^\//){
+						# something ran with a complete path
+						$cmd_cache{$conn->pid}=color('bright_red').$proctable->[ $proc ]->{'fname'}.color('reset');
+					}else{
+						# likely a thread or the like... such as dovecot/auth
+						# just trunkcat everything after the space
+						my $cmd=$proctable->[ $proc ]->{'cmndline'};
+						$cmd=~s/\ +.*//g;
+						$cmd_cache{$conn->pid}=color('bright_red').$cmd.color('reset');
+					}
+
+					push( @new_line, $cmd_cache{$conn->pid} );
+					$loop=0;
+				}
+
+				$proc++;
+			}
+
+		}elsif(
+			   ( !defined( $conn->pid ) ) &&
+			   $self->{command}
+			   ){
+			push( @new_line, '');
+		}
+
+		push( @td, \@new_line );
+	}
+
+	$tb->load( @td );
+
+	return $tb;
 }
 
 =head1 AUTHOR
