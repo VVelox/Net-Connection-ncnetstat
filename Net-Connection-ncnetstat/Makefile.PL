@@ -24,7 +24,6 @@ my %WriteMakefileArgs = (
 									   'Term::ANSIColor'=>'4.06',
 									   'Text::Table'=>'1.133',
 									   'Getopt::Long'=>'0.0.0',
-									   'JSON'=>'2.97.001',
 									   },
 						 dist  => { COMPRESS => 'gzip -9f', SUFFIX => 'gz', },
 						 clean => { FILES => 'Net-Connection-ncnetstat-*' },

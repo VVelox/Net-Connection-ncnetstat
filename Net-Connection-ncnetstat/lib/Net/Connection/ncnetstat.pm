@@ -13,7 +13,7 @@ use Proc::ProcessTable;
 
 =head1 NAME
 
-Net::Connection::ncnetstat - The great new Net::Connection::ncnetstat!
+Net::Connection::ncnetstat - The backend for ncnetstat, the colorized and enhanced netstat like tool.
 
 =head1 VERSION
 
@@ -26,18 +26,43 @@ our $VERSION = '0.0.0';
 
 =head1 SYNOPSIS
 
-Quick summary of what the module does.
-
-Perhaps a little code snippet.
-
     use Net::Connection::ncnetstat;
-
-    my $foo = Net::Connection::ncnetstat->new();
-    ...
+    
+    # Net::Connection::Match filters
+    my @filters=(
+                 {
+                  type=>'States',
+                  invert=>1,
+                  args=>{
+                         states=>['LISTEN']
+                  }
+                 }
+                );
+    
+    my $ncnetstat=Net::Connection::ncnetstat->new(
+                                                  {
+                                                   ptr=>1,
+                                                   command=>1,
+                                                   command_long=>0,
+                                                   sorter=>{
+                                                            invert=>0,
+                                                            type=>'host_lf',
+                                                   },
+                                                   match=>{
+                                                           checks=>\@filters,
+                                                   }
+                                                  }
+                                                 );
+    
+    print $ncnetstat->run;
 
 =head1 METHODS
 
 =head2 new
+
+This initiates the object.
+
+    my $ncnetstat=Net::Connection::ncnetstat->new( \%args );
 
 =head3 args hash ref
 
@@ -115,7 +140,7 @@ sub new{
 
 This runs it and returns a string.
 
-
+    print $ncnetstat->run;
 
 =cut
 
@@ -283,6 +308,12 @@ sub run{
 
 	return $tb;
 }
+
+=head1 TODO
+
+* Add support for more collection methods than L<Net::Connection::lsof>
+
+* Support color selection and column ordering.
 
 =head1 AUTHOR
 

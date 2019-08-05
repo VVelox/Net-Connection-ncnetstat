@@ -10,7 +10,6 @@ BEGIN {
     use_ok( 'Net::Connection::ncnetstat' ) || print "Bail out!\n";
 }
 
-use Data::Dumper;
 my $output_raw=`lsof -i UDP -i TCP -n -l -P`;
 if ( $? eq 0 ){
 	$extra_tests=2;
@@ -24,6 +23,8 @@ if ( $? eq 0 ){
 	};
 	ok( $worked eq '1', 'run test') or diag("run died with ".$@);
 	ok( ref($tb) eq 'Text::Table', 'run ref test') or diag("run did not return a Text::Table object");
+}else{
+	diag('No lsof installed on this system or "lsof -i UDP -i TCP -n -l -P" does not work');
 }
 
 my $tests_ran=1+$extra_tests;

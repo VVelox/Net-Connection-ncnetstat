@@ -35,9 +35,9 @@ sub help{
 
 --ptr <PTRs>   A comma seperated list of PTRs to search for.
 --ptri         Invert the PTR search.
---lptr         A comma seperated list of local PTRs to search for.
+--lptr <PTRs>  A comma seperated list of local PTRs to search for.
 --lptri        Invert the local PTR search.
---rptr         A comma seperated list of remote PTRs to search for.
+--rptr <PTRs>  A comma seperated list of remote PTRs to search for.
 --rptri        Invert the remote PTR search.
 
 -s <states>  A comma seperated list of states to search for.
@@ -391,3 +391,199 @@ my $ncnetstat=Net::Connection::ncnetstat->new(
 											   }
 											  );
 print $ncnetstat->run;
+
+=head1 NAME
+
+ncnetstat - a netstat like utility that supports color and searching
+
+=head1 SYNOPSIS
+
+ncnetstat [B<-a>] [B<--drp>] [B<-l>] [B<-n>] [B<--nc>] [B<-S <sort>>] [B<-t>] [B<-u>]
+[B<-c <CIDRs>>] [B<--ci -p <ports>>] [B<--pi>] [B<-P <protocols>>] [B<--Pi>]
+[B<--ptr <PTRs>>] [B<--ptri>] [B<--lptr <PTRs>>] [B<--lptri>] [B<--rptr <PTRs>>] [B<--rptri>]
+[B<-s <states>>] [B<--si>]
+
+=head1 FLAGS
+
+=head2 -a
+
+Show all connections.
+
+=head2 -c <CIDRs>
+
+A comma seperated list of CIDRs to search for.
+
+=head2 --ci
+
+Invert the CIDR search.
+
+=head2 -C
+
+Show the command to the first space.
+
+=head2 --Cl
+
+Show the whole command.
+
+=head2 --drp
+
+Don't resolve port names.
+
+=head2 -i
+
+Invert the sort.
+
+=head2 -l
+
+Show the listening ports.
+
+=head2 -n
+
+Don't resolve the PTRs.
+
+=head2 --nc
+
+Don't use colors.
+
+=head2 -p <ports>
+
+A comma seperated list of ports to search for.
+
+=head2 --pi
+
+Invert the port search.
+
+=head2 -P <protocols>
+
+A comma seperated list of protocols to search for.
+
+=head2 --Pi
+
+Invert your protocol search.
+
+=head2 --ptr <PTRs>
+
+A comma seperated list of PTRs to search for.
+
+=head2 --ptri
+
+Invert the PTR search.
+
+=head2 --lptr <PTRs>
+
+A comma seperated list of local PTRs to search for.
+
+=head2 --lptri
+
+Invert the local PTR search.
+
+=head2 --rptr <PTRs>
+
+A comma seperated list of remote PTRs to search for.
+
+=head2 --rptri
+
+Invert the remote PTR search.
+
+=head2 -s <states>
+
+A comma seperated list of states to search for.
+
+=head2 --si
+
+Invert the state search.
+
+=head2 -S <sort>
+
+The L<Net::Connection::Sort> to use.
+
+The default available sort methods are as below.
+
+    host_f   foreign host
+    host_fl  foreign host, local host *default*
+    host_l   local host
+    host_lf  local host, foreign host
+    pid      process ID
+    port_f   foreign port, numerically
+    port_fa  foreign port, alphabetically
+    port_l   local port, numerically
+    port_la  local port, alphabetically
+    proto    protocol
+    ptr_f    foreign PTR
+    ptr_l    local PTR
+    state    state
+    uid      user ID
+    user     username
+
+=head2 -t
+
+Show only TCP connections.
+
+=head2 -u
+
+Show only UDP connections.
+
+=head1 ENVIRONMENT VARIABLES
+
+=head2 NCNETSTAT_invert
+
+This is either 0 or 1. If defined it will be used for XORing the -i flag.
+
+    export CNETSTAT_invert=1
+    # run ncnetstat inverted
+    ncnetstat
+    # run it non-inverted, the opposite of what the -i flag normally is
+    ncnetstat -i
+
+=head2 NCNETSTAT_sort
+
+Sets the default sort method. -S overrides this.
+
+=head2 NO_COLOR
+
+If this is set, The output will not be colorized. If this is set, the --nc
+flag is also inverted.
+
+=head2 RES_NAMESERVERS
+
+A space-separated list of nameservers to query used by L<Net::DNS::Resolver>.
+
+There are a few more possible ones, but this is the most useful one and that documentation
+really belongs to that module.
+
+=head1 EXAMPLES
+
+    ncnestat -s established,time_wait
+
+Return a list of connection that are in the established or time_wait state.
+
+    ncnestat -c ::/0
+
+Return a list of all IPv6 addresses.
+
+    ncnestat -c ::1/128,127.0.0.1/32
+
+Return all connections to localhost.
+
+    ncnestat -c 192.168.15.2/32 -l
+
+Display all connections listening explicitly on 192.168.15.2.
+
+    ncnetstat -S host_f -i
+
+Sort the connections by the foreign host and invert the results.
+
+    ncnetstat -c 10.0.0.0/24 --ci
+
+Show connections that are either not locally or remotely part of the
+10.0.0.0/24 subnet.
+
+    ncnetstat --ptr foo.bar
+
+Find connections to/from IPs that have a PTR record of foo.bar.
+
+    ncnetstat --ptr foo.bar --ptri
+
+Find connections to/from IPs that do not have a PTR record of foo.bar.
+
+=cut
