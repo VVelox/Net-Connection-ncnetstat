@@ -1,16 +1,36 @@
 Net-Connection-ncnetstat
 
-The README is used to introduce the module and provide instructions on
-how to install the module, any machine dependencies it may have (for
-example C compilers and installed libraries) and any other information
-that should be provided before the module is installed.
+Provides a enhances colorized netstat like tool that is capable of doing searches.
 
-A README file is required for CPAN modules since CPAN extracts the README
-file from a module distribution so that people browsing the archive
-can use it to get an idea of the module's uses. It is usually a good idea
-to provide version information here so that people can decide whether
-fixes for the module are worth downloading.
+> ncnetstat -p ldap -n -a -C
+Proto User  PID  Local Host   Port  Foreach Host Port  State       Command
+tcp6  ldap  1377 *            ldap  *            *     LISTEN      slapd
+tcp4  ldap  1377 *            ldap  *            *     LISTEN      slapd
+tcp4  ldap  1377 127.0.0.1    ldap  127.0.0.1    41453 ESTABLISHED slapd
+tcp4  ldap  1377 127.0.0.1    ldap  127.0.0.1    62370 ESTABLISHED slapd
+tcp4  ldap  1377 127.0.0.1    ldap  127.0.0.1    35181 ESTABLISHED slapd
+tcp4  ldap  1377 127.0.0.1    ldap  127.0.0.1    23619 ESTABLISHED slapd
+tcp4  ldap  1377 127.0.0.1    ldap  127.0.0.1    23620 ESTABLISHED slapd
+tcp4  nslcd 1386 127.0.0.1    41453 127.0.0.1    ldap  ESTABLISHED nslcd
+tcp4  nslcd 1386 127.0.0.1    62370 127.0.0.1    ldap  ESTABLISHED nslcd
+tcp4  nslcd 1386 127.0.0.1    35181 127.0.0.1    ldap  ESTABLISHED nslcd
+tcp4  nslcd 1386 127.0.0.1    23619 127.0.0.1    ldap  ESTABLISHED nslcd
+tcp4  nslcd 1386 127.0.0.1    23620 127.0.0.1    ldap  ESTABLISHED nslcd
+tcp4  ldap  1377 192.168.15.2 ldap  192.168.14.2 39821 ESTABLISHED slapd
 
+The search criteria can be any of the following.
+
+CIDR
+port
+host
+PTR
+state
+
+TODO
+
+* Add support for more collection methods than Net::Connection::lsof
+
+* Support color selection and column ordering.
 
 INSTALLATION
 
