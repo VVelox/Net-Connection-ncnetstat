@@ -24,7 +24,7 @@ state
 
 ### CentOS
 
-    yum install cpanm
+    yum install cpanm lsof
     cpanm Net::Connection::ncnetstat
 
 ### Debian
