@@ -6,12 +6,13 @@ Provides a enhances colorized netstat like tool that is capable of doing searche
 
 The search criteria can be any of the following.
 
-CIDR
-port
-host
-PTR
-state
-
+* CIDR
+* port
+* host
+* PTR
+* state
+* UID
+* username
 
 # Installing
 
