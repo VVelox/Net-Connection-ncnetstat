@@ -3,6 +3,7 @@ Revision history for Net-Connection-ncnetstat
 0.1.0	 2019-08-
 		 - Add RegexPTR support.
 		 - Add UID support.
+		 - Add username support.
 
 0.0.1	 2019-08-05/21:10
 		 - Actually install the script now.

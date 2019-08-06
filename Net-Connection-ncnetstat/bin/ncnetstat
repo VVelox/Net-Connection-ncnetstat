@@ -50,6 +50,12 @@ sub help{
 -s <states>  A comma seperated list of states to search for.
 --si         Invert the state search.
 
+-u <users>   A comma seperated list of usernames to search for.
+--ui         Invert the username search.
+
+--uid <uids> A comma separated list of UIDs to search for.
+--uidi       Invert the UID search.
+
 The default available sort methods are as below.
 host_f   foreign host
 host_fl  foreign host, local host
@@ -110,6 +116,8 @@ my $command=0;
 my $command_long=0;
 my $uid_string;
 my $uid_invert=0;
+my $users_string;
+my $users_invert=0;
 
 # get the commandline options
 Getopt::Long::Configure ('no_ignore_case');
@@ -156,6 +164,8 @@ GetOptions(
 		   'Cl' => \$command_long,
 		   'uid=s' => \$uid_string,
 		   'uidi'=> \$uid_invert,
+		   'u=s' => \$users_string,
+		   'ui' => \$users_invert,
 		   );
 
 my @filters;
@@ -265,6 +275,21 @@ if ( defined( $uid_string ) ){
 					 invert=>$uid_invert,
 					 args=>{
 							uids=>\@uids,
+							},
+					 }
+		  );
+}
+
+#
+# Handle username searches
+#
+if ( defined( $users_string ) ){
+	my @users=split(/\,/, $users_string );
+	push( @filters, {
+					 type=>'Username',
+					 invert=>$users_invert,
+					 args=>{
+							usernames=>\@users,
 							},
 					 }
 		  );
