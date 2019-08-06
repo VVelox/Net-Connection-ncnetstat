@@ -1,5 +1,9 @@
 Revision history for Net-Connection-ncnetstat
 
+0.0.1	 2019-08-05/21:10
+		 - Actually install the script now.
+
+
 0.0.0	 2019-08-04/23:45
 		 - Initial release.
 
