@@ -33,6 +33,13 @@ sub help{
 -P <protocols>  A comma seperated list of protocols to search for.
 --Pi            Invert your protocol search.
 
+--ptrr <rgx>   A comma seperated list of regex to use for a PTR search.
+--ptrri        Invert the RegexPTR search.
+--lptrr <rgx>  A comma seperated list of regex to use for a local PTR search.
+--lptrri       Invert the local RegexPTR search.
+--rptrr <rgx>  A comma seperated list of regex to use for a remote PTR search.
+--rptrri       Invert the remote RegexPTR search.
+
 --ptr <PTRs>   A comma seperated list of PTRs to search for.
 --ptri         Invert the PTR search.
 --lptr <PTRs>  A comma seperated list of local PTRs to search for.
@@ -79,12 +86,18 @@ my $all=0;
 my $listening;
 my $invert=0;
 my $ptrs_string;
+my $ptrrs_string;
 my $rptrs_string;
 my $lptrs_string;
+my $rptrrs_string;
+my $lptrrs_string;
 my $ports_invert;
 my $rptrs_invert;
 my $lptrs_invert;
+my $rptrrs_invert;
+my $lptrrs_invert;
 my $ptrs_invert;
+my $ptrrs_invert;
 my $cidr_invert;
 my $lcidr_invert;
 my $rcidr_invert;
@@ -95,6 +108,8 @@ my $no_use_ptr=0;
 my $ptr=1;
 my $command=0;
 my $command_long=0;
+my $uid_string;
+my $uid_invert=0;
 
 # get the commandline options
 Getopt::Long::Configure ('no_ignore_case');
@@ -123,16 +138,24 @@ GetOptions(
 		   'si' => \$states_invert,
 		   'P=s' => \$protocols_string,
 		   'Pi' => \$protocols_invert,
+		   'ptrr=s' => \$ptrrs_string,
 		   'ptr=s' => \$ptrs_string,
 		   'ptri' => \$ptrs_invert,
+		   'ptrri' => \$ptrrs_invert,
+		   'rptrr=s' => \$rptrrs_string,
 		   'rptr=s' => \$rptrs_string,
+		   'rptrri' => \$rptrrs_invert,
 		   'rptri' => \$rptrs_invert,
+		   'lptrr=s' => \$lptrrs_string,
 		   'lptr=s' => \$lptrs_string,
 		   'lptri' => \$lptrs_invert,
+		   'lptrri' => \$lptrrs_invert,
 		   'nc' => \$no_color,
 		   'n' => \$no_use_ptr,
 		   'C' => \$command,
 		   'Cl' => \$command_long,
+		   'uid=s' => \$uid_string,
+		   'uidi'=> \$uid_invert,
 		   );
 
 my @filters;
@@ -233,6 +256,21 @@ if ( defined( $cidr_string ) ){
 }
 
 #
+# Handle UID searches
+#
+if ( defined( $uid_string ) ){
+	my @uids=split(/\,/, $uid_string );
+	push( @filters, {
+					 type=>'UID',
+					 invert=>$uid_invert,
+					 args=>{
+							uids=>\@uids,
+							},
+					 }
+		  );
+}
+
+#
 # Handle local CIDR searches
 #
 #if ( defined( $lcidr_string ) ){
@@ -278,13 +316,59 @@ if ( defined( $ports_string ) ){
 }
 
 #
+# Handle the regex PTR searches
+#
+if ( defined( $ptrrs_string ) ){
+	my @ptrs=split(/\,/, $ptrrs_string);
+	push( @filters, {
+					 type=>'RegexPTR',
+					 invert=>$ptrrs_invert,
+					 args=>{
+							ptrs=>\@ptrs,
+							},
+					 }
+		 );
+}
+
+#
+# Handle the regex local PTR searches
+#
+if ( defined( $lptrrs_string ) ){
+	my @ptrs=split(/\,/, $lptrrs_string);
+	push( @filters, {
+					 type=>'RegexPTR',
+					 invert=>$lptrrs_invert,
+					 args=>{
+							lptrs=>\@ptrs,
+							},
+					 }
+		 );
+}
+
+#
+# Handle the regex remote PTR searches
+#
+if ( defined( $rptrrs_string ) ){
+	my @ptrs=split(/\,/, $rptrrs_string);
+	push( @filters, {
+					 type=>'RegexPTR',
+					 invert=>$rptrrs_invert,
+					 args=>{
+							fptrs=>\@ptrs,
+							},
+					 }
+		 );
+
+}
+
+#
 # Handle the ptrs searches
 #
 if ( defined( $ptrs_string ) ){
 	my @ptrs=split(/\,/, $ptrs_string);
 	push( @filters, {
 					 type=>'PTR',
-					 invert=>$ptrs_invert,
+					 invert=>$rptrs_invert,
 					 args=>{
 							ptrs=>\@ptrs,
 							},
