@@ -27,6 +27,9 @@ sub help{
 -C    Show the command to the first space.
 --Cl  Show the whole command.
 
+--cmd <cmds> A comma seperated list of commands to search for.
+--cmdi       Invert the command search.
+
 -p <ports>  A comma seperated list of ports to search for.
 --pi        Invert the port search.
 
@@ -124,6 +127,8 @@ my $users_string;
 my $users_invert=0;
 my $pids_string;
 my $pids_invert=0;
+my $commands_string;
+my $commands_invert;
 
 # get the commandline options
 Getopt::Long::Configure ('no_ignore_case');
@@ -174,6 +179,8 @@ GetOptions(
 		   'uidi'=> \$uid_invert,
 		   'u=s' => \$users_string,
 		   'ui' => \$users_invert,
+		   'cmd=s' => \$commands_string,
+		   'cmdi' => \$commands_invert,
 		   );
 
 my @filters;
@@ -440,7 +447,7 @@ if ( defined( $lptrs_string ) ){
 }
 
 #
-# Handle the local ptrs searches
+# Handle the PID searches
 #
 if ( defined( $pids_string ) ){
 	my @pids=split(/\,/, $pids_string);
@@ -449,6 +456,21 @@ if ( defined( $pids_string ) ){
 					 invert=>$pids_invert,
 					 args=>{
 							pids=>\@pids,
+							},
+					 }
+		 );
+}
+
+#
+# Handle the command searches
+#
+if ( defined( $commands_string ) ){
+	my @commands=split(/\,/, $commands_string);
+	push( @filters, {
+					 type=>'Command',
+					 invert=>$commands_invert,
+					 args=>{
+							commands=>\@commands,
 							},
 					 }
 		 );
