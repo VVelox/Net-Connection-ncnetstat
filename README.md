@@ -7,8 +7,10 @@ Provides a enhances colorized netstat like tool that is capable of doing searche
 The search criteria can be any of the following.
 
 * CIDR
+* Command
 * port
 * host
+* PID
 * PTR
 * state
 * UID
