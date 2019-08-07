@@ -22,8 +22,8 @@ The search criteria can be any of the following.
     --drp      Don't resolve port names.
     -i         Invert the sort.
     -l         Show the listening ports.
-    -n         Don' resolve the PTRs.
-    --nc       Don\t use colors.
+    -n         Don't resolve the PTRs.
+    --nc       Don't use colors.
     -S <sort>  The Net::Connection::Sort to use.
     -t         Show only TCP connections.
     -u         Show only UDP connections.
