@@ -30,8 +30,12 @@ sub help{
 -p <ports>  A comma seperated list of ports to search for.
 --pi        Invert the port search.
 
--P <protocols>  A comma seperated list of protocols to search for.
---Pi            Invert your protocol search.
+-P <protos> A comma seperated list of protocols to search for.
+--Pi        Invert your protocol search.
+
+--pid <pids> A comma separated list of PIDs to search for.
+--pidi       Invert the pid search.
+
 
 --ptrr <rgx>   A comma seperated list of regex to use for a PTR search.
 --ptrri        Invert the RegexPTR search.
@@ -118,6 +122,8 @@ my $uid_string;
 my $uid_invert=0;
 my $users_string;
 my $users_invert=0;
+my $pids_string;
+my $pids_invert=0;
 
 # get the commandline options
 Getopt::Long::Configure ('no_ignore_case');
@@ -146,6 +152,8 @@ GetOptions(
 		   'si' => \$states_invert,
 		   'P=s' => \$protocols_string,
 		   'Pi' => \$protocols_invert,
+		   'pid=s' => \$pids_string,
+		   'pidi' => \$pids_invert,
 		   'ptrr=s' => \$ptrrs_string,
 		   'ptr=s' => \$ptrs_string,
 		   'ptri' => \$ptrs_invert,
@@ -426,6 +434,21 @@ if ( defined( $lptrs_string ) ){
 					 invert=>$lptrs_invert,
 					 args=>{
 							lptrs=>\@ptrs,
+							},
+					 }
+		 );
+}
+
+#
+# Handle the local ptrs searches
+#
+if ( defined( $pids_string ) ){
+	my @pids=split(/\,/, $pids_string);
+	push( @filters, {
+					 type=>'PID',
+					 invert=>$pids_invert,
+					 args=>{
+							pids=>\@pids,
 							},
 					 }
 		 );
