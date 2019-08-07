@@ -17,11 +17,11 @@ Net::Connection::ncnetstat - The backend for ncnetstat, the colorized and enhanc
 
 =head1 VERSION
 
-Version 0.1.0
+Version 0.1.1
 
 =cut
 
-our $VERSION = '0.1.0';
+our $VERSION = '0.1.1';
 
 
 =head1 SYNOPSIS
@@ -168,7 +168,7 @@ sub run{
 				 color('underline white').'PID'.color('reset'),
 				 color('underline white').'Local Host'.color('reset'),
 				 color('underline white').'Port'.color('reset'),
-				 color('underline white').'Foreach Host'.color('reset'),
+				 color('underline white').'Remote Host'.color('reset'),
 				 color('underline white').'Port'.color('reset'),
 				 color('underline white').'State'.color('reset'),
 				 );
