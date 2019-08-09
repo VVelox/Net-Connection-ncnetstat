@@ -6,7 +6,7 @@ use Getopt::Long;
 use Net::Connection::ncnetstat;
 
 sub version{
-	print "ncnetstat v. 0.0.0\n";
+	print "ncnetstat v. 0.1.0\n";
 }
 
 sub help{
@@ -57,8 +57,8 @@ sub help{
 -s <states>  A comma seperated list of states to search for.
 --si         Invert the state search.
 
--u <users>   A comma seperated list of usernames to search for.
---ui         Invert the username search.
+-U <users>   A comma seperated list of usernames to search for.
+--Ui         Invert the username search.
 
 --uid <uids> A comma separated list of UIDs to search for.
 --uidi       Invert the UID search.
@@ -184,8 +184,8 @@ GetOptions(
 		   'Cl' => \$command_long,
 		   'uid=s' => \$uid_string,
 		   'uidi'=> \$uid_invert,
-		   'u=s' => \$users_string,
-		   'ui' => \$users_invert,
+		   'U=s' => \$users_string,
+		   'Ui' => \$users_invert,
 		   'cmd=s' => \$commands_string,
 		   'cmdi' => \$commands_invert,
 		   );
@@ -586,6 +586,14 @@ Show the command to the first space.
 
 Show the whole command.
 
+=head2 --cmd <cmds>
+
+A comma seperated list of commands to search for.
+
+=head2 --cmdi
+
+Invert the command search.
+
 =head2 --drp
 
 Don't resolve port names.
@@ -622,6 +630,14 @@ A comma seperated list of protocols to search for.
 
 Invert your protocol search.
 
+=head2 --pid <pids>
+
+A comma separated list of PIDs to search for.
+
+=head2 --pidi
+
+Invert the pid search.
+
 =head2 --ptr <PTRs>
 
 A comma seperated list of PTRs to search for.
@@ -630,6 +646,14 @@ A comma seperated list of PTRs to search for.
 
 Invert the PTR search.
 
+=head2 --ptrr <rgx>
+
+A comma seperated list of regex to use for a PTR search.
+
+=head2 --ptrri
+
+Invert the RegexPTR search.
+
 =head2 --lptr <PTRs>
 
 A comma seperated list of local PTRs to search for.
@@ -637,6 +661,22 @@ A comma seperated list of local PTRs to search for.
 =head2 --lptri
 
 Invert the local PTR search.
+
+=head2 --lptrr <rgx>
+
+A comma seperated list of regex to use for a local PTR search.
+
+=head2 --lptrri
+
+Invert the local RegexPTR search.
+
+=head2 --rptr <PTRs>
+
+A comma seperated list of remote PTRs to search for.
+
+=head2 --rptri
+
+Invert the remote PTR search.
 
 =head2 --rptr <PTRs>
 
@@ -683,6 +723,35 @@ Show only TCP connections.
 =head2 -u
 
 Show only UDP connections.
+
+=head2 -U <users>
+
+A comma seperated list of usernames to search for.
+
+=head2 --Ui
+
+Invert the username search.
+
+=head2 --uid <uids>
+
+A comma separated list of UIDs to search for.
+
+=head2 --uidi
+
+Invert the UID search.
+
+=head1 PID/UID EQUALITIES
+
+For PID and UID searches, the equalities below can be used, by
+directly prepending them to the number.
+
+    <
+    <=
+    >
+    >=
+
+So if you wanted to find every connection from a UID greater than 1000, would
+do '--uid \>1000'.
 
 =head1 ENVIRONMENT VARIABLES
 
@@ -746,5 +815,14 @@ Find connections to/from IPs that have a PTR record of foo.bar.
     ncnetstat --ptr foo.bar --ptri
 
 Find connections to/from IPs that do not have a PTR record of foo.bar.
+
+    ncnetstat -n --uid '>1000' --Cl
+
+Show every connection by a user with a UID greater than 1000, do not resolve
+PTR info and print the whole command.
+
+    ncnetstat -U www -p 80,443 --pi
+
+Show every connecttion by the user www that is not a HTTP or HTTPS connection.
 
 =cut
