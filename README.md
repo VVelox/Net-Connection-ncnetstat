@@ -93,6 +93,51 @@ The search criteria can be any of the following.
     >
     >=
 
+# Examples
+
+    ncnestat -s established,time_wait
+
+Return a list of connection that are in the established or time_wait state.
+
+    ncnestat -c ::/0
+
+Return a list of all IPv6 addresses.
+
+    ncnestat -c ::1/128,127.0.0.1/32
+
+Return all connections to localhost.
+
+    ncnestat -c 192.168.15.2/32 -l
+
+Display all connections listening explicitly on 192.168.15.2.
+
+    ncnetstat -S host_f -i
+
+Sort the connections by the foreign host and invert the results.
+
+    ncnetstat -c 10.0.0.0/24 --ci
+
+Show connections that are either not locally or remotely part of the
+10.0.0.0/24 subnet.
+
+    ncnetstat --ptr foo.bar
+
+Find connections to/from IPs that have a PTR record of foo.bar.
+
+    ncnetstat --ptr foo.bar --ptri
+
+Find connections to/from IPs that do not have a PTR record of foo.bar.
+
+    ncnetstat -n --uid '>1000' --Cl
+
+Show every connection by a user with a UID greater than 1000, do not resolve
+PTR info and print the whole command.
+
+    ncnetstat -U www -p 80,443 --pi
+
+Show every connecttion by the user www that is not a HTTP or HTTPS connection.
+
+
 # Installing
 
 ## FreeBSD
