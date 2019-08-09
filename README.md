@@ -19,11 +19,11 @@ The search criteria can be any of the following.
 # Command Line Options
 
     -a         Show all connections.
-    --drp      Don't resolve port names.
+    --drp      Do not resolve port names.
     -i         Invert the sort.
     -l         Show the listening ports.
-    -n         Don't resolve the PTRs.
-    --nc       Don't use colors.
+    -n         Do not resolve the PTRs.
+    --nc       Do not use colors.
     -S <sort>  The Net::Connection::Sort to use.
     -t         Show only TCP connections.
     -u         Show only UDP connections.
