@@ -95,19 +95,16 @@ The search criteria can be any of the following.
 
 # Examples
 
-    ncnestat -s established,time_wait
+    ncnetstat -s established,time_wait
 
 Return a list of connection that are in the established or time_wait state.
 
-    ncnestat -c ::/0
 
-Return a list of all IPv6 addresses.
-
-    ncnestat -c ::1/128,127.0.0.1/32
+    ncnetstat -c ::1/128,127.0.0.1/32
 
 Return all connections to localhost.
 
-    ncnestat -c 192.168.15.2/32 -l
+    ncnetstat -c 192.168.15.2/32 -l
 
 Display all connections listening explicitly on 192.168.15.2.
 
