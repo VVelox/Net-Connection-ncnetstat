@@ -85,6 +85,13 @@ The search criteria can be any of the following.
     state    state
     uid      user ID
     user     username
+    
+    For PID and UID searches, the equalities below can be used, by
+    directly prepending them to the number.
+    <
+    <=
+    >
+    >=
 
 # Installing
 
