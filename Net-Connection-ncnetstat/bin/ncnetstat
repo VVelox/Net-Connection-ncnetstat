@@ -12,11 +12,11 @@ sub version{
 sub help{
 	print '
 -a         Show all connections.
---drp      Don\'t resolve port names.
+--drp      Do not resolve port names.
 -i         Invert the sort.
 -l         Show the listening ports.
--n         Don\' resolve the PTRs.
---nc       Don\'t use colors.
+-n         Do not resolve the PTRs.
+--nc       Do not use colors.
 -S <sort>  The Net::Connection::Sort to use.
 -t         Show only TCP connections.
 -u         Show only UDP connections.
@@ -79,6 +79,13 @@ ptr_l    local PTR
 state    state
 uid      user ID
 user     username
+
+For PID and UID searches, the equalities below can be used, by
+directly prepending them to the number.
+<
+<=
+>
+>=
 ';
 }
 
