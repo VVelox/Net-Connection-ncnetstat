@@ -104,7 +104,7 @@ The search criteria can be any of the following.
 
 This has been tested as working on Debian 9 minimal.
 
-    apt install perl perl-base perl-modules make cpanminus lsof
+    apt install perl perl-base perl-modules make cpanminus lsof gcc 
     cpanm Net::Connection::ncnetstat
 # TODO
 
