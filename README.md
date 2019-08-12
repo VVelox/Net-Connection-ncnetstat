@@ -8,13 +8,16 @@ The search criteria can be any of the following.
 
 * CIDR
 * Command
+* CPU usage percent
 * port
 * host
+* memory usage percent
 * PID
 * PTR
 * state
 * UID
 * username
+* wait channel
 
 # Command Line Options
 ```
