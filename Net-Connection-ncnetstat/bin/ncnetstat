@@ -6,7 +6,7 @@ use Getopt::Long;
 use Net::Connection::ncnetstat;
 
 sub version{
-	print "ncnetstat v. 0.1.0\n";
+	print "ncnetstat v. 0.2.0\n";
 }
 
 sub help{
@@ -37,7 +37,6 @@ sub help{
 
 --mem <pct> Show connections belonging to procs matching this memory usage percent.
 --memi      Invert the memory usage search.
-
 
 -p <ports>  A comma seperated list of ports to search for.
 --pi        Invert the port search.
@@ -71,7 +70,7 @@ sub help{
 --uid <uids> A comma separated list of UIDs to search for.
 --uidi       Invert the UID search.
 
--w <rgx>     A comma separated list of regexp to use for matching wchan valies.
+-w <rgx>     A comma separated list of regexp to use for matching wchan values.
 --wi         Invert the wchan search.
 
 The default available sort methods are as below.
@@ -636,7 +635,7 @@ ncnetstat - a netstat like utility that supports color and searching
 ncnetstat [B<-a>] [B<--drp>] [B<-l>] [B<-n>] [B<--nc>] [B<-S <sort>>] [B<-t>] [B<-u>]
 [B<-c <CIDRs>>] [B<--ci -p <ports>>] [B<--pi>] [B<-P <protocols>>] [B<--Pi>]
 [B<--ptr <PTRs>>] [B<--ptri>] [B<--lptr <PTRs>>] [B<--lptri>] [B<--rptr <PTRs>>] [B<--rptri>]
-[B<-s <states>>] [B<--si>]
+[B<-s <states>>] [B<--si>] ...
 
 =head1 FLAGS
 
@@ -668,6 +667,14 @@ A comma seperated list of commands to search for.
 
 Invert the command search.
 
+=head2 --cpu <pct>
+
+Show connections belonging to procs matching this CPU usage percent.
+
+=head2--cpui
+
+Invert the CPU search.
+
 =head2 --drp
 
 Don't resolve port names.
@@ -680,6 +687,15 @@ Invert the sort.
 
 Show the listening ports.
 
+=head2 --mem <pct>
+
+Show connections belonging to procs matching this memory usage percent.
+
+
+=head2 --memi
+
+Invert the memory usage search.
+
 =head2 -n
 
 Don't resolve the PTRs.
@@ -691,6 +707,10 @@ Don't use colors.
 =head2 -p <ports>
 
 A comma seperated list of ports to search for.
+
+=head2 --pct
+
+Show memory and CPU usage of the process that has the connection.
 
 =head2 --pi
 
@@ -814,9 +834,21 @@ A comma separated list of UIDs to search for.
 
 Invert the UID search.
 
-=head1 PID/UID EQUALITIES
+=head2 -W
 
-For PID and UID searches, the equalities below can be used, by
+Show the wait channel.
+
+=head2 -w <rgx>
+
+A comma separated list of regexp to use for matching wchan values.
+
+=head2 --wi
+
+Invert the wchan search
+
+=head1 PID/UID/CPU/Mem EQUALITIES
+
+For some searches, the equalities below can be used, by
 directly prepending them to the number.
 
     <
@@ -898,5 +930,10 @@ PTR info and print the whole command.
     ncnetstat -U www -p 80,443 --pi
 
 Show every connecttion by the user www that is not a HTTP or HTTPS connection.
+
+   ncnetstat --cpu '>5' --Cl --pct -W
+
+Search for connections from procs using more than 5% of the CPU time. Show memory
+and CPU usage as well whole command and wait channel.
 
 =cut

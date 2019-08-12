@@ -17,11 +17,11 @@ Net::Connection::ncnetstat - The backend for ncnetstat, the colorized and enhanc
 
 =head1 VERSION
 
-Version 0.2.0
+Version 0.3.0
 
 =cut
 
-our $VERSION = '0.2.0';
+our $VERSION = '0.3.0';
 
 
 =head1 SYNOPSIS
@@ -136,7 +136,7 @@ sub new{
 	if ( defined( $args{pct} ) ){
 		$self->{pct}=$args{pct};
 	}
-	
+
 	if ( defined( $args{wchan} ) ){
 		$self->{wchan}=$args{wchan};
 	}
@@ -399,6 +399,10 @@ L<https://cpanratings.perl.org/d/Net-Connection-ncnetstat>
 =item * Search CPAN
 
 L<https://metacpan.org/release/Net-Connection-ncnetstat>
+
+=item * Repository
+
+L<https://github.com/VVelox/Net-Connection-ncnetstat>
 
 =back
 
