@@ -17,9 +17,11 @@ sub help{
 -l         Show the listening ports.
 -n         Do not resolve the PTRs.
 --nc       Do not use colors.
+--pct      Show memory and CPU usage percent.
 -S <sort>  The Net::Connection::Sort to use.
 -t         Show only TCP connections.
 -u         Show only UDP connections.
+-W         Show the wchan.
 
 -c <CIDRs>  A comma seperated list of CIDRs to search for.
 --ci        Invert the CIDR search.
@@ -30,6 +32,13 @@ sub help{
 --cmd <cmds> A comma seperated list of commands to search for.
 --cmdi       Invert the command search.
 
+--cpu <pct> Show connections belonging to procs matching this CPU usage percent.
+--cpui      Invert the CPU search.
+
+--mem <pct> Show connections belonging to procs matching this memory usage percent.
+--memi      Invert the memory usage search.
+
+
 -p <ports>  A comma seperated list of ports to search for.
 --pi        Invert the port search.
 
@@ -38,7 +47,6 @@ sub help{
 
 --pid <pids> A comma separated list of PIDs to search for.
 --pidi       Invert the pid search.
-
 
 --ptrr <rgx>   A comma seperated list of regex to use for a PTR search.
 --ptrri        Invert the RegexPTR search.
@@ -63,6 +71,9 @@ sub help{
 --uid <uids> A comma separated list of UIDs to search for.
 --uidi       Invert the UID search.
 
+-w <rgx>     A comma separated list of regexp to use for matching wchan valies.
+--wi         Invert the wchan search.
+
 The default available sort methods are as below.
 host_f   foreign host
 host_fl  foreign host, local host
@@ -80,8 +91,8 @@ state    state
 uid      user ID
 user     username
 
-For PID and UID searches, the equalities below can be used, by
-directly prepending them to the number.
+For CPU, memory, PID, and UID searches, the equalities below can be
+used, by directly prepending them to the number.
 <
 <=
 >
@@ -136,6 +147,14 @@ my $pids_string;
 my $pids_invert=0;
 my $commands_string;
 my $commands_invert;
+my $wchan_string;
+my $wchan_invert=0;
+my $wchan_show=0;
+my $pct_show=0;
+my $cpu_string;
+my $cpu_invert=0;
+my $mem_string;
+my $mem_invert=0;
 
 # get the commandline options
 Getopt::Long::Configure ('no_ignore_case');
@@ -188,6 +207,14 @@ GetOptions(
 		   'Ui' => \$users_invert,
 		   'cmd=s' => \$commands_string,
 		   'cmdi' => \$commands_invert,
+		   'w=s' => \$wchan_string,
+		   'wi' => \$wchan_invert,
+		   'W' => \$wchan_show,
+		   'pct' => \$pct_show,
+		   'cpu=s' => \$cpu_string,
+		   'cpui' => \$cpu_invert,
+		   'mem=s' => \$mem_string,
+		   'memi' => \$mem_invert,
 		   );
 
 my @filters;
@@ -483,6 +510,51 @@ if ( defined( $commands_string ) ){
 		 );
 }
 
+#
+# Handle the wait channel searches
+#
+if ( defined( $wchan_string ) ){
+	my @wchans=split(/\,/, $wchan_string);
+	push( @filters, {
+					 type=>'WChan',
+					 invert=>$wchan_invert,
+					 args=>{
+							wchans=>\@wchans,
+							},
+					 }
+		 );
+}
+
+#
+# Handle the pctcpu searches
+#
+if ( defined( $cpu_string ) ){
+	my @cpus=split(/\,/, $cpu_string);
+	push( @filters, {
+					 type=>'PctCPU',
+					 invert=>$cpu_invert,
+					 args=>{
+							pctcpus=>\@cpus,
+							},
+					 }
+		 );
+}
+
+#
+# Handle the pctmem searches
+#
+if ( defined( $mem_string ) ){
+	my @mems=split(/\,/, $mem_string);
+	push( @filters, {
+					 type=>'PctMem',
+					 invert=>$mem_invert,
+					 args=>{
+							pctmems=>\@mems,
+							},
+					 }
+		 );
+}
+
 # handle the -t -u options
 # only add a filter if one is specified...
 # adding both is just pointless
@@ -542,6 +614,8 @@ my $ncnetstat=Net::Connection::ncnetstat->new(
 											   ptr=>$ptr,
 											   command=>$command,
 											   command_long=>$command_long,
+											   wchan=>$wchan_show,
+											   pct=>$pct_show,
 											   sorter=>{
 														invert=>$invert,
 														type=>$sort,
