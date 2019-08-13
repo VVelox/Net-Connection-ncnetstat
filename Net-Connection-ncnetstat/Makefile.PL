@@ -19,7 +19,7 @@ my %WriteMakefileArgs = (
 										   },
 						 PREREQ_PM => {
 									   'Net::Connection'=>'0.1.0',
-									   'Net::Connection::lsof'=>'0.0.2',
+									   'Net::Connection::lsof'=>'0.1.1',
 									   'Net::Connection::Match'=>'0.2.0',
 									   'Net::Connection::Sort'=>'0.0.0',
 									   'Term::ANSIColor'=>'4.06',
