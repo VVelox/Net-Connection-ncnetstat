@@ -1,5 +1,8 @@
 Revision history for Net-Connection-ncnetstat
 
+0.?.?	 2019-08-
+		 - Add a missing column style option.
+
 0.4.1	 2019-08-14/05:00
 		 - Actually use Net::Connection->proc now.
 
