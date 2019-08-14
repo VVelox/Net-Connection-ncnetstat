@@ -1,5 +1,8 @@
 Revision history for Net-Connection-ncnetstat
 
+0.4.0	 2019-08-14/04:30
+		 - Convert to Text::ANSITable for line wrapping with --Cl
+
 0.3.0	 2019-08-12/06:00
 		 - Add support for wchan, pctmem, and pctcpu.
 
