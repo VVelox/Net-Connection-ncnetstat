@@ -18,11 +18,11 @@ Net::Connection::ncnetstat - The backend for ncnetstat, the colorized and enhanc
 
 =head1 VERSION
 
-Version 0.4.0
+Version 0.4.1
 
 =cut
 
-our $VERSION = '0.4.0';
+our $VERSION = '0.4.1';
 
 
 =head1 SYNOPSIS
@@ -337,6 +337,16 @@ sub run{
 				if (defined( $cmd_cache{$conn->pid} ) ){
 					push( @new_line, color('bright_red').$cmd_cache{$conn->pid}.color('reset') );
 					$loop=0;
+				}elsif(
+					   defined( $conn->proc )
+					   ){
+					my $command=$conn->proc;
+					if ( ! $self->{command_long} ){
+						$command=~s/\ .*//;
+					}
+					$cmd_cache{$conn->pid}=$command;
+					push( @new_line, color('bright_red').$cmd_cache{$conn->pid}.color('reset') );
+					$loop=0,
 				}elsif( $proctable->[ $proc ]->pid eq $conn->pid ){
 					if ( $proctable->[ $proc ]->{'cmndline'} =~ /^$/ ){
 						#kernel process
