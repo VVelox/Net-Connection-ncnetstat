@@ -205,19 +205,20 @@ sub run{
 	$tb->border_style('Default::none_ascii');  # if not, a nice default is picked
 	$tb->color_theme('Default::no_color');  # if not, a nice default is picked
 
-	 $tb->set_column_style(0, pad => 0);
-	 $tb->set_column_style(1, pad => 1);
-	 $tb->set_column_style(2, pad => 0);
-	 $tb->set_column_style(3, pad => 1, formats=>[[wrap => {ansi=>1, mb=>1}]]);
-	 $tb->set_column_style(4, pad => 0);
-	 $tb->set_column_style(5, pad => 1, formats=>[[wrap => {ansi=>1, mb=>1}]]);
-	 $tb->set_column_style(6, pad => 0);
-	 $tb->set_column_style(7, pad => 1);
-	 $tb->set_column_style(9, pad => 0);
-	 $tb->set_column_style(10, pad => 1);
-	 $tb->set_column_style(11, pad => 0, formats=>[[wrap => {ansi=>1, mb=>1}]]);
-	 $tb->set_column_style(12, pad => 1);
-	 $tb->set_column_style(13, pad => 0 );
+	$tb->set_column_style(0, pad => 0);
+	$tb->set_column_style(1, pad => 1);
+	$tb->set_column_style(2, pad => 0);
+	$tb->set_column_style(3, pad => 1, formats=>[[wrap => {ansi=>1, mb=>1}]]);
+	$tb->set_column_style(4, pad => 0);
+	$tb->set_column_style(5, pad => 1, formats=>[[wrap => {ansi=>1, mb=>1}]]);
+	$tb->set_column_style(6, pad => 0);
+	$tb->set_column_style(7, pad => 1);
+	$tb->set_column_style(8, pad => 0);
+	$tb->set_column_style(9, pad => 1);
+	$tb->set_column_style(10, pad => 0);
+	$tb->set_column_style(11, pad => 1, formats=>[[wrap => {ansi=>1, mb=>1}]]);
+	$tb->set_column_style(12, pad => 0);
+	$tb->set_column_style(13, pad => 1 );
 
 	$tb->columns( \@headers );
 
