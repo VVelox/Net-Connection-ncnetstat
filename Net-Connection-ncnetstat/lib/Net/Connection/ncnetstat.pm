@@ -18,11 +18,11 @@ Net::Connection::ncnetstat - The backend for ncnetstat, the colorized and enhanc
 
 =head1 VERSION
 
-Version 0.4.1
+Version 0.4.2
 
 =cut
 
-our $VERSION = '0.4.1';
+our $VERSION = '0.4.2';
 
 
 =head1 SYNOPSIS
