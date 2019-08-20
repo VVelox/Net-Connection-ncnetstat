@@ -175,40 +175,65 @@ sub run{
 
 	@found=$self->{sorter}->sorter( \@found );
 
-	my @headers=(
-				 'Proto',
-				 'User',
-				 'PID',
-				 'Local Host',
-				 'Port',
-				 'Remote Host',
-				 'Prt',
-				 'State'
-				 );
-
-	 if ( $self->{wchan} ){
-	 	push( @headers, 'WChan' );
-	 }
-
-	 if ( $self->{pct} ){
-	 	push( @headers, 'CPU%' );
-	 	push( @headers, 'Mem%' );
-	 }
-
-	 if ( $self->{command} ){
-	 	push( @headers, 'Command' );
-	 }
-
-	#my $tb = Text::Table->new( @headers );
 	my $tb = Text::ANSITable->new;
-
 	$tb->border_style('Default::none_ascii');  # if not, a nice default is picked
 	$tb->color_theme('Default::no_color');  # if not, a nice default is picked
 
-	$tb->set_column_style(0, pad => 0);
-	$tb->set_column_style(1, pad => 1);
-	$tb->set_column_style(2, pad => 0);
-	$tb->set_column_style(3, pad => 1, formats=>[[wrap => {ansi=>1, mb=>1}]]);
+	my @headers;
+	my $header_int=0;
+	push( @headers, 'Proto' );
+	$tb->set_column_style($header_int, pad => 0); $header_int++;
+	push( @headers, 'User' );
+	$tb->set_column_style($header_int, pad => 1); $header_int++;
+	push( @headers, 'PID' );
+	$tb->set_column_style($header_int, pad => 0); $header_int++;
+	push( @headers, 'Local Host' );
+	$tb->set_column_style($header_int, pad => 1, formats=>[[wrap => {ansi=>1, mb=>1}]]); $header_int++;
+	push( @headers, 'Port' );
+	$tb->set_column_style($header_int, pad => 0); $header_int++;
+	push( @headers, 'Remote Host' );
+	$tb->set_column_style($header_int, pad => 1, formats=>[[wrap => {ansi=>1, mb=>1}]]); $header_int++;
+	push( @headers, 'Prt' );
+	$tb->set_column_style($header_int, pad => 0); $header_int++;
+	push( @headers, 'State' );
+	$tb->set_column_style($header_int, pad => 1); $header_int++;
+
+	my $padding=0;
+	if ( $self->{wchan} ){
+		if (( $header_int % 2 ) != 0){
+			$padding=1;
+		}
+	 	push( @headers, 'WChan' );
+		$tb->set_column_style($header_int, pad => $padding); $header_int++;
+	}
+
+	if ( $self->{pct} ){
+		if (( $header_int % 2 ) != 0){
+			$padding=1;
+		}else{
+			$padding=0;
+		}
+	 	push( @headers, 'CPU%' );
+		$tb->set_column_style($header_int, pad => $padding); $header_int++;
+		if (( $header_int % 2 ) != 0){
+			$padding=1;
+		}else{
+			$padding=0;
+		}
+	 	push( @headers, 'Mem%' );
+		$tb->set_column_style($header_int, pad => $padding); $header_int++;
+	 }
+
+	if ( $self->{command} ){
+		if (( $header_int % 2 ) != 0){
+			$padding=1;
+		}else{
+			$padding=0;
+		}
+	 	push( @headers, 'Command' );
+		$tb->set_column_style($header_int, pad => $padding, formats=>[[wrap => {ansi=>1, mb=>1}]]); $header_int++;
+	 }
+
 	$tb->set_column_style(4, pad => 0);
 	$tb->set_column_style(5, pad => 1, formats=>[[wrap => {ansi=>1, mb=>1}]]);
 	$tb->set_column_style(6, pad => 0);
