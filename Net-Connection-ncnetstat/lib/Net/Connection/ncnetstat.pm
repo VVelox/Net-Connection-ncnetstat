@@ -18,11 +18,11 @@ Net::Connection::ncnetstat - The backend for ncnetstat, the colorized and enhanc
 
 =head1 VERSION
 
-Version 0.4.2
+Version 0.5.0
 
 =cut
 
-our $VERSION = '0.4.2';
+our $VERSION = '0.5.0';
 
 
 =head1 SYNOPSIS
@@ -119,6 +119,7 @@ sub new{
 				command_long=>0,
 				wchan=>0,
 				pct=>0,
+				no_pid_user=>0,
 				};
     bless $self;
 
@@ -144,6 +145,10 @@ sub new{
 
 	if ( defined( $args{command_long} ) ){
 		$self->{command_long}=$args{command_long};
+	}
+
+	if ( defined( $args{no_pid_user} ) ){
+		$self->{no_pid_user}=$args{no_pid_user};
 	}
 
 	return $self;
@@ -183,10 +188,12 @@ sub run{
 	my $header_int=0;
 	push( @headers, 'Proto' );
 	$tb->set_column_style($header_int, pad => 0); $header_int++;
-	push( @headers, 'User' );
-	$tb->set_column_style($header_int, pad => 1); $header_int++;
-	push( @headers, 'PID' );
-	$tb->set_column_style($header_int, pad => 0); $header_int++;
+	if (! $self->{no_pid_user} ){
+		push( @headers, 'User' );
+		$tb->set_column_style($header_int, pad => 1); $header_int++;
+		push( @headers, 'PID' );
+		$tb->set_column_style($header_int, pad => 0); $header_int++;
+	}
 	push( @headers, 'Local Host' );
 	$tb->set_column_style($header_int, pad => 1, formats=>[[wrap => {ansi=>1, mb=>1}]]); $header_int++;
 	push( @headers, 'Port' );
@@ -247,7 +254,6 @@ sub run{
 
 	$tb->columns( \@headers );
 
-	
 	# process table stuff if needed
 	my $ppt;
 	my $proctable;
@@ -263,23 +269,26 @@ sub run{
 					  color('bright_yellow').$conn->proto.color('reset'),
 					  );
 
-		# handle adding the username or UID if we have one
-		if ( defined( $conn->username ) ){
-			push( @new_line,  color('bright_cyan').$conn->username.color('reset'));
-		}else{
-			if ( defined( $conn->uid ) ){
-				push( @new_line,  color('bright_cyan').$conn->uid.color('reset'));
+		# don't add the PID or user if requested to
+		if ( ! $self->{no_pid_user} ){
+			# handle adding the username or UID if we have one
+			if ( defined( $conn->username ) ){
+				push( @new_line,  color('bright_cyan').$conn->username.color('reset'));
+			}else{
+				if ( defined( $conn->uid ) ){
+					push( @new_line,  color('bright_cyan').$conn->uid.color('reset'));
+				}else{
+					push( @new_line, '');
+				}
+			}
+
+			# handle adding the PID if we have one
+			if ( defined( $conn->pid ) ){
+				push( @new_line,  color('bright_red').$conn->pid.color('reset'));
+				$conn->pid;
 			}else{
 				push( @new_line, '');
 			}
-		}
-
-		# handle adding the PID if we have one
-		if ( defined( $conn->pid ) ){
-			push( @new_line,  color('bright_red').$conn->pid.color('reset'));
-			$conn->pid;
-		}else{
-			push( @new_line, '');
 		}
 
 		# Figure out what we are using for the local host
