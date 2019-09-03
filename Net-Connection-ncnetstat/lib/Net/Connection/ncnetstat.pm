@@ -85,6 +85,10 @@ This is the hash to pass to L<Net::Connection::Match>.
 
 By default this is undef and that module won't be used.
 
+=head4 no_pid_user
+
+Don't show the PID or UID/user colomn.
+
 =head4 sorter
 
 This is what is to be passed to L<Net::Connection::Sorter>.
