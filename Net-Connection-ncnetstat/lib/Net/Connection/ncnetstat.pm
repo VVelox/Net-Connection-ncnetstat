@@ -11,6 +11,14 @@ use Term::ANSIColor;
 use Proc::ProcessTable;
 use Text::ANSITable;
 
+# use Net::Connection::FreeBSD_sockstat if possible
+if ( $^O =~ /freebsd/ ) {
+	use Net::Connection::FreeBSD_sockstat;
+}else {
+	use Net::Connection::lsof;
+}
+
+
 
 =head1 NAME
 
@@ -168,8 +176,14 @@ This runs it and returns a string.
 
 sub run{
 	my $self=$_[0];
-	
-	my @objects = &lsof_to_nc_objects;
+
+	my @objects;
+	if ( $^O !~ /freebsd/ ) {
+		@objects = &lsof_to_nc_objects;
+	}
+	else {
+		@objects = &sockstat_to_nc_objects;
+	}
 
 	my @found;
 	if (defined( $self->{match} )){
@@ -185,8 +199,8 @@ sub run{
 	@found=$self->{sorter}->sorter( \@found );
 
 	my $tb = Text::ANSITable->new;
-	$tb->border_style('Default::none_ascii');  # if not, a nice default is picked
-	$tb->color_theme('Default::no_color');  # if not, a nice default is picked
+	$tb->border_style('ASCII::None');
+	$tb->color_theme('NoColor');
 
 	my @headers;
 	my $header_int=0;
@@ -204,7 +218,7 @@ sub run{
 	$tb->set_column_style($header_int, pad => 0); $header_int++;
 	push( @headers, 'Remote Host' );
 	$tb->set_column_style($header_int, pad => 1, formats=>[[wrap => {ansi=>1, mb=>1}]]); $header_int++;
-	push( @headers, 'Prt' );
+	push( @headers, 'Port' );
 	$tb->set_column_style($header_int, pad => 0); $header_int++;
 	push( @headers, 'State' );
 	$tb->set_column_style($header_int, pad => 1); $header_int++;

@@ -13,6 +13,7 @@ sub help{
 	print '
 -a         Show all connections.
 --drp      Do not resolve port names.
+--dump     Show the Net::Connection::Match filter and exit.
 -i         Invert the sort.
 -l         Show the listening ports.
 -n         Do not resolve the PTRs.
@@ -154,6 +155,7 @@ my $cpu_string;
 my $cpu_invert=0;
 my $mem_string;
 my $mem_invert=0;
+my $dump=0;
 
 # get the commandline options
 Getopt::Long::Configure ('no_ignore_case');
@@ -214,6 +216,7 @@ GetOptions(
 		   'cpui' => \$cpu_invert,
 		   'mem=s' => \$mem_string,
 		   'memi' => \$mem_invert,
+		   'dump' => \$dump,
 		   );
 
 my @filters;
@@ -236,22 +239,23 @@ if (
 	( ! $listening )
 	){
 	# If -a is not given, we don't want the listen ports
-	push( @filters, {
+	push( @filters,
+		  {
+		   type=>'Ports',
+		   invert=>1,
+		   args=>{
+				  ports=>[
+						   '*',
+						   ],
+				  }
+		   },
+		   {
 					 type=>'States',
 					 invert=>1,
 					 args=>{
 							states=>['LISTEN']
 							}
-					 },
-		  {
-		   type=>'Ports',
-		   invert=>1,
-		   args=>{
-				  fports=>[
-						   '*',
-						   ],
-				  }
-		   }
+					 }
 		 );
 }elsif(
 	   $listening &&
@@ -606,6 +610,13 @@ if ( $no_color ){
 # set C if Cl is set
 if ( $command_long && ! $command ){
 	$command=1;
+}
+
+#dump the filters if asked
+if ($dump) {
+	use Data::Dumper;
+	print Dumper( \@filters );
+	exit;
 }
 
 my $ncnetstat=Net::Connection::ncnetstat->new(
