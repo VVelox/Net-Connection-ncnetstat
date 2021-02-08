@@ -6,7 +6,7 @@ use Getopt::Long;
 use Net::Connection::ncnetstat;
 
 sub version{
-	print "ncnetstat v. 0.2.0\n";
+	print "ncnetstat v. 0.3.0\n";
 }
 
 sub help{
@@ -232,6 +232,23 @@ if ( $help ){
 	&help;
 	exit;
 }
+
+#
+# XOR various command line options
+#
+if (defined( $ENV{'ncnetstat_pct'} )) {
+	$pct_show= $pct_show ^ $ENV{'ncnetstat_pct'};
+}
+if (defined( $ENV{'ncnetstat_C'} )) {
+	$command = $command ^ $ENV{'ncnetstat_C'};
+}
+if (defined( $ENV{'ncnetstat_Cl'} )) {
+	$command_long = $command_long ^ $ENV{'ncnetstat_Cl'};
+}
+if (defined( $ENV{'ncnetstat_W'} )) {
+	$wchan_show = $wchan_show ^ $ENV{'ncnetstat_W'};
+}
+
 
 # add the filters for the -l and -a option
 if (
@@ -897,6 +914,30 @@ A space-separated list of nameservers to query used by L<Net::DNS::Resolver>.
 
 There are a few more possible ones, but this is the most useful one and that documentation
 really belongs to that module.
+
+=head2 ncnetstat_C
+
+Used to xor the -C switch.
+
+Set to either 0 or 1, boolean, for setting the default.
+
+=head2 ncnetstat_Cl
+
+Used to xor the --Cl switch.
+
+Set to either 0 or 1, boolean, for setting the default.
+
+=head2 ncnetstat_W
+
+Used to xor the -W switch.
+
+Set to either 0 or 1, boolean, for setting the default.
+
+=head2 ncnetstat_pct
+
+Used to xor the --pct switch.
+
+Set to either 0 or 1, boolean, for setting the default.
 
 =head1 EXAMPLES
 
