@@ -1,5 +1,8 @@
 Revision history for Net-Connection-ncnetstat
 
+0.6.2	 2021-02-16/02:30
+		 - Remove it accidentally using Net::Conection::lsof always.
+
 0.6.1	 2021-02-08/20:00
 		 - Accidentally inverted the OS check for FreeBSD in Makefile.PL.
 

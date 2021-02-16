@@ -6,7 +6,6 @@ use warnings;
 use Net::Connection;
 use Net::Connection::Match;
 use Net::Connection::Sort;
-use Net::Connection::lsof;
 use Term::ANSIColor;
 use Proc::ProcessTable;
 use Text::ANSITable;
@@ -25,11 +24,11 @@ Net::Connection::ncnetstat - The backend for ncnetstat, the colorized and enhanc
 
 =head1 VERSION
 
-Version 0.6.1
+Version 0.6.2
 
 =cut
 
-our $VERSION = '0.6.1';
+our $VERSION = '0.6.2';
 
 
 =head1 SYNOPSIS
