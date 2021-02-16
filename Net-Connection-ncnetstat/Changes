@@ -1,5 +1,8 @@
 Revision history for Net-Connection-ncnetstat
 
+0.6.3	 2021-02-16/10:30
+		 - Fix at runtime module use to actually work now. Thanks Grinnz, Botje!
+
 0.6.2	 2021-02-16/02:30
 		 - Remove it accidentally using Net::Conection::lsof always.
 

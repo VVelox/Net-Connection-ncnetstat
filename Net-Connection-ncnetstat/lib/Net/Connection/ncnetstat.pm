@@ -11,12 +11,9 @@ use Proc::ProcessTable;
 use Text::ANSITable;
 
 # use Net::Connection::FreeBSD_sockstat if possible
-if ( $^O =~ /freebsd/ ) {
-	use Net::Connection::FreeBSD_sockstat;
-}
-else {
-	use Net::Connection::lsof;
-}
+use if $^O =~ /freebsd/, 'Net::Connection::FreeBSD_sockstat';
+use if $^O !~ /freebsd/, 'Net::Connection::lsof';
+
 
 =head1 NAME
 
@@ -180,7 +177,7 @@ sub run {
 		@objects = &lsof_to_nc_objects;
 	}
 	else {
-		@objects = &sockstat_to_nc_objects;
+		@objects = sockstat_to_nc_objects;
 	}
 
 	my @found;
