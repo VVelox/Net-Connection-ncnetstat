@@ -1,5 +1,8 @@
 Revision history for Net-Connection-ncnetstat
 
+0.6.4	 2021-02-17/04:00
+		 - Change use if around to play friendly with older versions of Perl.
+
 0.6.3	 2021-02-16/10:30
 		 - Fix at runtime module use to actually work now. Thanks Grinnz, Botje!
 

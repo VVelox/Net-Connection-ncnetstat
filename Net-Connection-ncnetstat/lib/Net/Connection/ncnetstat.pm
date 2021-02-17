@@ -11,8 +11,8 @@ use Proc::ProcessTable;
 use Text::ANSITable;
 
 # use Net::Connection::FreeBSD_sockstat if possible
-use if $^O =~ /freebsd/, 'Net::Connection::FreeBSD_sockstat';
-use if $^O !~ /freebsd/, 'Net::Connection::lsof';
+use if $^O eq 'freebsd', 'Net::Connection::FreeBSD_sockstat';
+use if $^O ne 'freebsd', 'Net::Connection::lsof';
 
 
 =head1 NAME
@@ -21,11 +21,11 @@ Net::Connection::ncnetstat - The backend for ncnetstat, the colorized and enhanc
 
 =head1 VERSION
 
-Version 0.6.3
+Version 0.6.4
 
 =cut
 
-our $VERSION = '0.6.3';
+our $VERSION = '0.6.4';
 
 
 =head1 SYNOPSIS
@@ -177,7 +177,7 @@ sub run {
 		@objects = &lsof_to_nc_objects;
 	}
 	else {
-		@objects = sockstat_to_nc_objects;
+		@objects = &sockstat_to_nc_objects;
 	}
 
 	my @found;
