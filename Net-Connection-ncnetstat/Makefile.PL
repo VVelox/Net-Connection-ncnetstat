@@ -19,10 +19,10 @@ my %WriteMakefileArgs = (
 	},
 	PREREQ_PM => {
 		'Net::Connection'        => '0.2.0',
-		'Net::Connection::Match' => '0.4.0',
+		'Net::Connection::Match' => '0.5.0',
 		'Net::Connection::Sort'  => '0.0.1',
 		'Term::ANSIColor'        => '4.06',
-		'Text::ANSITable'        => '0.501',
+		'Text::ANSITable'        => '0.601',
 		'Getopt::Long'           => '0.0.0',
 		'Data::Unixish::Apply'   => '1.570',
 	},
