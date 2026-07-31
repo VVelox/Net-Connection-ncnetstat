@@ -11,6 +11,7 @@ my %WriteMakefileArgs = (
 	LICENSE            => 'artistic_2',
 	MIN_PERL_VERSION   => '5.006',
 	INST_SCRIPT        => 'bin',
+	EXE_FILES          => ['src_bin/ncnetstat'],
 	CONFIGURE_REQUIRES => {
 		'ExtUtils::MakeMaker' => '0',
 	},
@@ -30,13 +31,6 @@ my %WriteMakefileArgs = (
 	dist  => { COMPRESS => 'gzip -9f', SUFFIX => 'gz', },
 	clean => { FILES    => 'Net-Connection-ncnetstat-*' },
 );
-
-#if ( $^O =~ /freebsd/ ) {
-#	$WriteMakefileArgs{PREREQ_PM}{'Net::Connection::FreeBSD_sockstat'} = '0.0.1';
-#}
-#else {
-	$WriteMakefileArgs{PREREQ_PM}{'Net::Connection::lsof'} = '0.2.0';
-#}
 
 # Compatibility with old versions of ExtUtils::MakeMaker
 unless ( eval { ExtUtils::MakeMaker->VERSION('6.64'); 1 } ) {
