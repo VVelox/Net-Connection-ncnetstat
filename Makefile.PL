@@ -26,20 +26,30 @@ my %WriteMakefileArgs = (
 		'Text::ANSITable'        => '0.601',
 		'Getopt::Long'           => '0.0.0',
 		'Data::Unixish::Apply'   => '1.570',
+		'Net::Connection::lsof'  => '0.3.0',
 	},
 	dist  => { COMPRESS => 'gzip -9f', SUFFIX => 'gz', },
 	clean => { FILES    => 'Net-Connection-ncnetstat-*' },
 );
 
-# the collection method used is chosen based on the OS, so only require the
-# one that will actually be used at runtime
-if ( $^O eq 'linux' ) {
-	$WriteMakefileArgs{PREREQ_PM}{'Net::Connection::Linux_ss'} = '0.0.1';
-} elsif ( $^O eq 'freebsd' ) {
-	$WriteMakefileArgs{PREREQ_PM}{'Net::Connection::FreeBSD_sockstat'} = '1.0.0';
-} else {
-	$WriteMakefileArgs{PREREQ_PM}{'Net::Connection::lsof'} = '0.3.0';
-}
+# The native collection method for the OS in question is preferred at runtime,
+# but Net::Connection::lsof is used as a fallback if it is not installed, so
+# only recommend it. This way a native module that is not on CPAN yet or that
+# fails to install does not render this uninstallable.
+my %native_collectors = (
+	linux   => { 'Net::Connection::Linux_ss'         => '0.0.1' },
+	freebsd => { 'Net::Connection::FreeBSD_sockstat' => '0.0.2' },
+);
+if ( defined( $native_collectors{$^O} ) ) {
+	$WriteMakefileArgs{META_MERGE} = {
+		'meta-spec' => { version => 2 },
+		prereqs     => {
+			runtime => {
+				recommends => $native_collectors{$^O},
+			},
+		},
+	};
+} ## end if ( defined( $native_collectors{$^O} ) )
 
 # Compatibility with old versions of ExtUtils::MakeMaker
 unless ( eval { ExtUtils::MakeMaker->VERSION('6.64'); 1 } ) {

@@ -10,10 +10,17 @@ use Term::ANSIColor;
 use Proc::ProcessTable;
 use Text::ANSITable;
 
-# use the native collection method for the OS in question, falling back to lsof
-use if $^O eq 'linux',                     'Net::Connection::Linux_ss';
-use if $^O eq 'freebsd',                   'Net::Connection::FreeBSD_sockstat';
-use if $^O ne 'linux' && $^O ne 'freebsd', 'Net::Connection::lsof';
+# the native collection method for the OS in question, if there is one
+my %native_collectors = (
+	linux   => [ 'Net::Connection::Linux_ss',         'ss_to_nc_objects' ],
+	freebsd => [ 'Net::Connection::FreeBSD_sockstat', 'sockstat_to_nc_objects' ],
+);
+
+# the collection method to fall back to when there is no usable native one
+my @lsof_collector = ( 'Net::Connection::lsof', 'lsof_to_nc_objects' );
+
+# holds the code ref for the collection method chosen by &_collector
+my $collector;
 
 =head1 NAME
 
@@ -160,13 +167,55 @@ sub new {
 	return $self;
 } ## end sub new
 
+# Returns the code ref for the collection method to use, loading the module it
+# lives in as needed.
+#
+# The native collection method for the OS in question is preferred, but as it is
+# entirely possible for that module to not be installed, L<Net::Connection::lsof>
+# is used as a fallback. This is why the loading is done at runtime instead of
+# via use, as a missing native module should not render this module unusable.
+sub _collector {
+	if ( defined($collector) ) {
+		return $collector;
+	}
+
+	my @to_try;
+	if ( defined( $native_collectors{$^O} ) ) {
+		push( @to_try, $native_collectors{$^O} );
+	}
+	push( @to_try, \@lsof_collector );
+
+	my @failures;
+	foreach my $to_try (@to_try) {
+		my ( $module, $sub_name ) = @{$to_try};
+
+		my $module_file = $module . '.pm';
+		$module_file =~ s/::/\//g;
+
+		if ( !eval { require $module_file; 1 } ) {
+			push( @failures, $module . ' could not be loaded... ' . $@ );
+			next;
+		}
+
+		$collector = $module->can($sub_name);
+		if ( defined($collector) ) {
+			return $collector;
+		}
+
+		push( @failures, $module . ' does not provide ' . $sub_name );
+	} ## end foreach my $to_try (@to_try)
+
+	die( 'No usable connection collection method found... ' . join( ' ', @failures ) );
+} ## end sub _collector
+
 =head2 run
 
 This runs it and returns a string.
 
 The collection method used is chosen based on the OS. L<Net::Connection::Linux_ss>
 is used on Linux and L<Net::Connection::FreeBSD_sockstat> on FreeBSD. Anything
-else falls back to L<Net::Connection::lsof>.
+else falls back to L<Net::Connection::lsof>, which is also used if the native
+module for the OS in question is not installed.
 
     print $ncnetstat->run;
 
@@ -175,14 +224,8 @@ else falls back to L<Net::Connection::lsof>.
 sub run {
 	my $self = $_[0];
 
-	my @objects;
-	if ( $^O eq 'linux' ) {
-		@objects = &ss_to_nc_objects;
-	} elsif ( $^O eq 'freebsd' ) {
-		@objects = &sockstat_to_nc_objects;
-	} else {
-		@objects = &lsof_to_nc_objects;
-	}
+	my $collection_method = _collector();
+	my @objects           = &{$collection_method}();
 
 	my @found;
 	if ( defined( $self->{match} ) ) {

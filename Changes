@@ -4,6 +4,8 @@ Revision history for Net-Connection-ncnetstat
 		 - Use Net::Connection::Linux_ss on Linux and
 		   Net::Connection::FreeBSD_sockstat on FreeBSD, falling back to
 		   Net::Connection::lsof elsewhere.
+		 - Load the collection method at runtime and fall back to
+		   Net::Connection::lsof if the native one is not installed.
 
 0.8.0	 2023-06-01/13:15
 		 - Don't try to sort by default now.

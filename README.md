@@ -182,7 +182,9 @@ This has been tested as working on Debian 9 minimal.
 ## Everything Else
 
 Anything that is not Linux or FreeBSD falls back to using lsof, which will need
-to be installed.
+to be installed. The same happens on Linux or FreeBSD if the native module for
+that OS, Net::Connection::Linux_ss or Net::Connection::FreeBSD_sockstat, is not
+installed.
 
     cpanm Net::Connection::ncnetstat
 
