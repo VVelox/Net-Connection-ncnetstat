@@ -20,7 +20,6 @@ my %WriteMakefileArgs = (
 	},
 	PREREQ_PM => {
 		'Net::Connection'        => '0.2.0',
-		'Net::Connection::lsof'  => '0.3.0',
 		'Net::Connection::Match' => '0.5.0',
 		'Net::Connection::Sort'  => '0.1.1',
 		'Term::ANSIColor'        => '4.06',
@@ -31,6 +30,16 @@ my %WriteMakefileArgs = (
 	dist  => { COMPRESS => 'gzip -9f', SUFFIX => 'gz', },
 	clean => { FILES    => 'Net-Connection-ncnetstat-*' },
 );
+
+# the collection method used is chosen based on the OS, so only require the
+# one that will actually be used at runtime
+if ( $^O eq 'linux' ) {
+	$WriteMakefileArgs{PREREQ_PM}{'Net::Connection::Linux_ss'} = '0.0.1';
+} elsif ( $^O eq 'freebsd' ) {
+	$WriteMakefileArgs{PREREQ_PM}{'Net::Connection::FreeBSD_sockstat'} = '1.0.0';
+} else {
+	$WriteMakefileArgs{PREREQ_PM}{'Net::Connection::lsof'} = '0.3.0';
+}
 
 # Compatibility with old versions of ExtUtils::MakeMaker
 unless ( eval { ExtUtils::MakeMaker->VERSION('6.64'); 1 } ) {

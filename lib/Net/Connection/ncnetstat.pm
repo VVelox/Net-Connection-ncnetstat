@@ -10,10 +10,10 @@ use Term::ANSIColor;
 use Proc::ProcessTable;
 use Text::ANSITable;
 
-# use Net::Connection::FreeBSD_sockstat if possible
-#use if $^O eq 'freebsd', 'Net::Connection::FreeBSD_sockstat';
-#use if $^O ne 'freebsd', 'Net::Connection::lsof';
-use Net::Connection::lsof;
+# use the native collection method for the OS in question, falling back to lsof
+use if $^O eq 'linux',                     'Net::Connection::Linux_ss';
+use if $^O eq 'freebsd',                   'Net::Connection::FreeBSD_sockstat';
+use if $^O ne 'linux' && $^O ne 'freebsd', 'Net::Connection::lsof';
 
 =head1 NAME
 
@@ -21,12 +21,11 @@ Net::Connection::ncnetstat - The backend for ncnetstat, the colorized and enhanc
 
 =head1 VERSION
 
-Version 0.8.0
+Version 0.9.0
 
 =cut
 
-our $VERSION = '0.8.0';
-
+our $VERSION = '0.9.0';
 
 =head1 SYNOPSIS
 
@@ -159,11 +158,15 @@ sub new {
 	}
 
 	return $self;
-}
+} ## end sub new
 
 =head2 run
 
 This runs it and returns a string.
+
+The collection method used is chosen based on the OS. L<Net::Connection::Linux_ss>
+is used on Linux and L<Net::Connection::FreeBSD_sockstat> on FreeBSD. Anything
+else falls back to L<Net::Connection::lsof>.
 
     print $ncnetstat->run;
 
@@ -173,12 +176,13 @@ sub run {
 	my $self = $_[0];
 
 	my @objects;
-#	if ( $^O !~ /freebsd/ ) {
+	if ( $^O eq 'linux' ) {
+		@objects = &ss_to_nc_objects;
+	} elsif ( $^O eq 'freebsd' ) {
+		@objects = &sockstat_to_nc_objects;
+	} else {
 		@objects = &lsof_to_nc_objects;
-#	}
-#	else {
-#		@objects = &sockstat_to_nc_objects;
-#	}
+	}
 
 	my @found;
 	if ( defined( $self->{match} ) ) {
@@ -187,8 +191,7 @@ sub run {
 				push( @found, $conn );
 			}
 		}
-	}
-	else {
+	} else {
 		@found = @objects;
 	}
 
@@ -240,8 +243,7 @@ sub run {
 	if ( $self->{pct} ) {
 		if ( ( $header_int % 2 ) != 0 ) {
 			$padding = 1;
-		}
-		else {
+		} else {
 			$padding = 0;
 		}
 		push( @headers, 'CPU%' );
@@ -249,26 +251,24 @@ sub run {
 		$header_int++;
 		if ( ( $header_int % 2 ) != 0 ) {
 			$padding = 1;
-		}
-		else {
+		} else {
 			$padding = 0;
 		}
 		push( @headers, 'Mem%' );
 		$tb->set_column_style( $header_int, pad => $padding );
 		$header_int++;
-	}
+	} ## end if ( $self->{pct} )
 
 	if ( $self->{command} ) {
 		if ( ( $header_int % 2 ) != 0 ) {
 			$padding = 1;
-		}
-		else {
+		} else {
 			$padding = 0;
 		}
 		push( @headers, 'Command' );
 		$tb->set_column_style( $header_int, pad => $padding, formats => [ [ wrap => { ansi => 1, mb => 1 } ] ] );
 		$header_int++;
-	}
+	} ## end if ( $self->{command} )
 
 	$tb->set_column_style( 4,  pad => 0 );
 	$tb->set_column_style( 5,  pad => 1, formats => [ [ wrap => { ansi => 1, mb => 1 } ] ] );
@@ -302,12 +302,10 @@ sub run {
 			# handle adding the username or UID if we have one
 			if ( defined( $conn->username ) ) {
 				push( @new_line, color('bright_cyan') . $conn->username . color('reset') );
-			}
-			else {
+			} else {
 				if ( defined( $conn->uid ) ) {
 					push( @new_line, color('bright_cyan') . $conn->uid . color('reset') );
-				}
-				else {
+				} else {
 					push( @new_line, '' );
 				}
 			}
@@ -316,18 +314,16 @@ sub run {
 			if ( defined( $conn->pid ) ) {
 				push( @new_line, color('bright_red') . $conn->pid . color('reset') );
 				$conn->pid;
-			}
-			else {
+			} else {
 				push( @new_line, '' );
 			}
-		}
+		} ## end if ( !$self->{no_pid_user} )
 
 		# Figure out what we are using for the local host
 		my $local;
 		if ( defined( $conn->local_ptr ) && $self->{ptr} ) {
 			$local = $conn->local_ptr;
-		}
-		else {
+		} else {
 			$local = $conn->local_host;
 		}
 
@@ -335,8 +331,7 @@ sub run {
 		my $foreign;
 		if ( defined( $conn->foreign_ptr ) && $self->{ptr} ) {
 			$foreign = $conn->foreign_ptr;
-		}
-		else {
+		} else {
 			$foreign = $conn->foreign_host;
 		}
 
@@ -344,8 +339,7 @@ sub run {
 		my $lport;
 		if ( defined( $conn->local_port_name ) ) {
 			$lport = $conn->local_port_name;
-		}
-		else {
+		} else {
 			$lport = $conn->local_port;
 		}
 
@@ -353,8 +347,7 @@ sub run {
 		my $fport;
 		if ( defined( $conn->foreign_port_name ) ) {
 			$fport = $conn->foreign_port_name;
-		}
-		else {
+		} else {
 			$fport = $conn->foreign_port;
 		}
 
@@ -401,8 +394,7 @@ sub run {
 				if ( defined( $cmd_cache{ $conn->pid } ) ) {
 					push( @new_line, color('bright_red') . $cmd_cache{ $conn->pid } . color('reset') );
 					$loop = 0;
-				}
-				elsif ( defined( $conn->proc ) ) {
+				} elsif ( defined( $conn->proc ) ) {
 					my $command = $conn->proc;
 					if ( !$self->{command_long} ) {
 						$command =~ s/\ .*//;
@@ -410,25 +402,21 @@ sub run {
 					$cmd_cache{ $conn->pid } = $command;
 					push( @new_line, color('bright_red') . $cmd_cache{ $conn->pid } . color('reset') );
 					$loop = 0,;
-				}
-				elsif ( $proctable->[$proc]->pid eq $conn->pid ) {
+				} elsif ( $proctable->[$proc]->pid eq $conn->pid ) {
 					if ( $proctable->[$proc]->{'cmndline'} =~ /^$/ ) {
 
 						#kernel process
 						$cmd_cache{ $conn->pid }
 							= color('bright_red') . '[' . $proctable->[$proc]->{'fname'} . ']' . color('reset');
-					}
-					elsif ( $self->{command_long} ) {
+					} elsif ( $self->{command_long} ) {
 						$cmd_cache{ $conn->pid }
 							= color('bright_red') . $proctable->[$proc]->{'cmndline'} . color('reset');
-					}
-					elsif ( $proctable->[$proc]->{'cmndline'} =~ /^\// ) {
+					} elsif ( $proctable->[$proc]->{'cmndline'} =~ /^\// ) {
 
 						# something ran with a complete path
 						$cmd_cache{ $conn->pid }
 							= color('bright_red') . $proctable->[$proc]->{'fname'} . color('reset');
-					}
-					else {
+					} else {
 						# likely a thread or the like... such as dovecot/auth
 						# just trunkcat everything after the space
 						my $cmd = $proctable->[$proc]->{'cmndline'};
@@ -438,27 +426,26 @@ sub run {
 
 					push( @new_line, $cmd_cache{ $conn->pid } );
 					$loop = 0;
-				}
+				} ## end elsif ( $proctable->[$proc]->pid eq $conn->pid)
 
 				$proc++;
-			}
+			} ## end while ( defined( $proctable->[$proc] ) && $loop)
 
-		}
-		elsif ( ( !defined( $conn->pid ) )
+		} elsif ( ( !defined( $conn->pid ) )
 			&& $self->{command} )
 		{
 			push( @new_line, '' );
 		}
 
 		$tb->add_row( \@new_line );
-	}
+	} ## end foreach my $conn (@found)
 
 	return $tb->draw;
-}
+} ## end sub run
 
 =head1 TODO
 
-* Add support for more collection methods than L<Net::Connection::lsof>
+* Add support for more collection methods.
 
 * Support color selection and column ordering.
 
@@ -515,4 +502,4 @@ This is free software, licensed under:
 
 =cut
 
-1; # End of Net::Connection::ncnetstat
+1;    # End of Net::Connection::ncnetstat

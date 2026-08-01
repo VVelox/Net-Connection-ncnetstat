@@ -158,24 +158,36 @@ and CPU usage as well whole command and wait channel.
 
 ## FreeBSD
 
-    pkg install perl5 p5-App-cpanminus lsof
+sockstat is used for gathering the connection info and is part of the base system.
+
+    pkg install perl5 p5-App-cpanminus
     cpanm Net::Connection::ncnetstat
     
 ## Linux
 
+ss, from iproute2, is used for gathering the connection info.
+
 ### CentOS
 
-    yum install cpanm lsof
+    yum install cpanm iproute
     cpanm Net::Connection::ncnetstat
 
 ### Debian
 
 This has been tested as working on Debian 9 minimal.
 
-    apt install perl perl-base perl-modules make cpanminus lsof gcc 
+    apt install perl perl-base perl-modules make cpanminus iproute2 gcc 
     cpanm Net::Connection::ncnetstat
+
+## Everything Else
+
+Anything that is not Linux or FreeBSD falls back to using lsof, which will need
+to be installed.
+
+    cpanm Net::Connection::ncnetstat
+
 # TODO
 
-* Add support for more collection methods than Net::Connection::lsof
+* Add support for more collection methods.
 
 * Support color selection and column ordering.
